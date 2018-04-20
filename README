@@ -28,7 +28,7 @@ BASIC USAGE FOR BOT ADMIN
 
 5. Now exploit telegram to access your bot and add the search profiles. This bot would access e-hentai/exhentai to search the galleries at a specified interval then send the result to users' own channel and (if user allowed) bot admins' channel.
 
-This bot contains a step to step guide to help users creating their search profiles. For more information, please access the profile creating process and follow the instructions.
+This bot contains a step by step guide to help users creating their search profiles. For more information, please access the profile creating process and follow the instructions.
 
 If you hope to run this bot on servers' background, please use systemd to create a service.
 
