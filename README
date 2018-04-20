@@ -1,0 +1,40 @@
+TELEGRAM-E-HENTAI-BOT
+
+A python telegram bot tracking e-hentai/exhentai galleries and sending them to specified channel.
+
+ENVIRONMENT AND PYTHON VERSION
+Tested OS: UBUNTU 16.04
+I have only tested this program on Ubuntu 16.04 (deploy it on Ubuntu 14.04 might encounter some strange UNICODE errors).
+
+Python version: 3.5 or above
+
+PRE-REQUEST
+This program relies on several third-party python modules.
+
+requests   http://docs.python-requests.org
+python-telegram-bot   https://python-telegram-bot.readthedocs.io
+PILLOW   https://pillow.readthedocs.io
+
+BASIC USAGE FOR BOT ADMIN
+
+1. Apply a bot at @BotFather on telegram. Then copy the token to token variable in tgbotmodules/botconfig.py.
+
+2. Create a private channel and add the bot created before as the admin. After that exploit some specified bots (like @getidsbot) to gain the botID. Once gained this ID, copy it to the pubChannelID variable in tgbotmodules/botconfig.py.
+
+3. RECOMMENDATION-View two separate config files (tgbotmodules/botconfig.py and tgbotmodules/spidermodules/generalcfg.py) to modify the running process of the bot. 
+   (Since the history reason, this program has two config files to control different parts of it. I would fix it later.)
+
+4. Run tgexhbot_tg.py
+
+5. Now exploit telegram to access your bot and add the search profiles. This bot would access e-hentai/exhentai to search the galleries at a specified interval.
+
+This bot contains a step to step guide to help users creating their search profiles. For more information, please access the profile creating process and follow the instructions.
+
+If you hope to run this bot on servers' background, please use systemd to create a service.
+
+LICENSE: WTFPL
+
+
+
+
+
