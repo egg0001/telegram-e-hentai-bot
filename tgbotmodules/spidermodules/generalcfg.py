@@ -12,7 +12,7 @@ langkeys = ['RUS', 'Indonesian', 'Osomatsu-san', 'English', 'Korean', 'korean', 
 
 noEngOnlyGallery = True  # Discard all the gerallies only containing English title and not suitable to Eastern users.
 
-proxy = []
+proxy = ["http://127.0.0.1:8113"]
 
 
 unwantedfemale = ['ssbbw']
