@@ -3,12 +3,13 @@ import json
 import logging
 from ast import literal_eval
 from tgbotmodules import userdatastore
-from tgbotmodules import botconfig
+# from tgbotmodules import botconfig
 from tgbotmodules import replytext
 from tgbotmodules.spidermodules import generator # use the sleep function
 from tgbotmodules import exhspider
 from tgbotmodules import userdatastore
-from tgbotmodules import botconfig
+# from tgbotmodules import botconfig
+from tgbotmodules.spidermodules import generalcfg
 from tgbotmodules import searchoptgen 
 from io import BytesIO 
 
@@ -16,7 +17,7 @@ from io import BytesIO
   
 def verify(inputStr, user_data, chat_data, logger):
    outputTextList = []     
-   if inputStr == botconfig.passcode:
+   if inputStr == generalcfg.passcode:
       statusdict = userdatastore.userfiledetect()
       if statusdict['isfile'] == False:
          logger.error("Missied userdata, created new one at verify.")
@@ -27,11 +28,11 @@ def verify(inputStr, user_data, chat_data, logger):
       logger.info("Identity of %s verified", user_data['actualusername'])
       chat_data.update({"fromadvcreate": False, "fromedit": False, "fromguide": False})
       currentuserdata = userdatastore.dataretrive(actusername=user_data['actualusername'])
-      outputTextGeneralInfo = replytext.GeneralInfo.format(len(currentuserdata), botconfig.maxiumprofile)
+      outputTextGeneralInfo = replytext.GeneralInfo.format(len(currentuserdata), generalcfg.maxiumprofile)
       outputTextList.append(outputTextGeneralInfo)
-      if len(currentuserdata) >= botconfig.maxiumprofile:
+      if len(currentuserdata) >= generalcfg.maxiumprofile:
          logger.info("User %s has %d profile(s), excess or equal to the maxium profiles limitation.", user_data['actualusername'], len(currentuserdata))
-         outputTextProfileExcessVerify = replytext.ProfileExcessVerify.format(botconfig.maxiumprofile) 
+         outputTextProfileExcessVerify = replytext.ProfileExcessVerify.format(generalcfg.maxiumprofile) 
          outputTextList.append(outputTextProfileExcessVerify)
          chat_data.update({'profileover': True, 'state': 'advance'})
       else:
@@ -180,7 +181,7 @@ def userchenn(inputStr, user_data, chat_data, logger):
             user_data.update({"userchenn": ""})
       else:
          user_data.update({"userchenn": userChannel})
-      logger.info("The personal channel of user %s is %s.", user_data['actualusername'], str(userChannel))
+      logger.info("The personal channel of user %s is %s.", user_data['actualusername'], str(user_data["userchenn"]))
       chat_data.update({'state': 'userpubchenn'})
       outputTextToUserPubChenn = replytext.ToUserPubChenn
       outputTextList.append(outputTextToUserPubChenn)
@@ -497,7 +498,7 @@ def spiderfunction(logger):
    spiderDict = userdatastore.getspiderinfo()
    logger.info("Spider is initialing")
    toTelegramDict = {} 
-   sleep = generator.Sleep(sleepstr=botconfig.searchInterval)
+   sleep = generator.Sleep(sleepstr=generalcfg.searchInterval)
    for sd in spiderDict:
       logger.info("Search user %s's information", str(sd))
       generator.Sleep.Havearest(sleep)

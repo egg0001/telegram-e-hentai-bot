@@ -14,7 +14,8 @@ from telegram.ext import ConversationHandler
 from tgbotconvhandler import messageanalyze
 from tgbotconvhandler import spiderfunction
 from tgbotmodules import replytext 
-from tgbotmodules import botconfig
+# from tgbotmodules import botconfig
+from tgbotmodules.spidermodules import generalcfg
 from tgbotmodules import userdatastore
 # from tgbotmodules import userdatastore
  
@@ -58,34 +59,35 @@ def searcheh(bot, job):
          if spiderDict[td]['userchenn']:
             chat_idList.append(spiderDict[td]['userchenn'])
          if spiderDict[td]["userpubchenn"] == True:
-            chat_idList.append(botconfig.pubChannelID)
+            chat_idList.append(generalcfg.pubChannelID)
          logger.info("Begin to send user %s's result.", td)
          for chat_id in chat_idList:
             messageDict = {"messageCate": "message",
                            "messageContent": ["------This is user {0}'s result------".format(str(td))]}
-            channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)         
-            messageDict = {'messageCate': "photo", "messageContent": toTelegramDict[td]["imageObjDict"]}
             channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
+            for obj in toTelegramDict[td]['imageObjDict']:
+               messageDict = {'messageCate': "photo", "messageContent": [toTelegramDict[td]["imageObjDict"][obj]]}
+               channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
+               messageDict = {'messageCate': "message", "messageContent": [obj]}
+               channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
             messageDict = {'messageCate': "message", "messageContent": toTelegramDict[td]["strList"]}
             channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id) 
          logger.info("User %s's result has been sent.", td)
       logger.info("All users' result has been sent.")
    else: 
-      logger.info("Could not gain any new result to user.")         
-      messageDict = {"messageCate": "message", "messageContent": ["We have no new result"]}
-      channelmessage(bot=bot, messageDict=messageDict, chat_id=botconfig.pubChannelID)
+      logger.info("Could not gain any new result to users.")         
+      messageDict = {"messageCate": "message", "messageContent": ["We do not have any new result"]}
+      channelmessage(bot=bot, messageDict=messageDict, chat_id=generalcfg.pubChannelID)
 
 def channelmessage(bot, messageDict, chat_id): 
    messageContent = messageDict["messageContent"]
    for mC in messageContent:
-      err = 0        
-      for err in range(botconfig.timeoutRetry):
+      err = 0
+      for err in range(generalcfg.timeoutRetry):
          try:
             if messageDict['messageCate'] == 'photo':
-               bio = messageContent[mC]
-               bio.seek(0)
-               bot.send_photo(chat_id=chat_id, photo=bio)
-               del bio
+               mC.seek(0)
+               bot.send_photo(chat_id=chat_id, photo=mC)
             else:
                bot.send_message(chat_id=chat_id, text=mC)
          except:
@@ -96,13 +98,11 @@ def channelmessage(bot, messageDict, chat_id):
             err = 0
             break
       else:
-         if messageDict['messageCate'] == 'photo':
-            del bio
          print ("network issue")
          err = 0
 
 def autoCreateJob(job):
-   job.run_repeating(searcheh, interval=botconfig.interval, first=5)
+   job.run_repeating(searcheh, interval=generalcfg.interval, first=5)
 
 def cancel(bot, update, user_data, chat_data):  
    update.message.reply_text(text=replytext.UserCancel)
@@ -116,7 +116,7 @@ def error(bot, update, error):
    logger.warning('Update "%s" caused error "%s"', update, error)
 
 def main():
-   updater = Updater(token=botconfig.token)
+   updater = Updater(token=generalcfg.token)
    dp =updater.dispatcher
    job=updater.job_queue
    conv_handler = ConversationHandler(
