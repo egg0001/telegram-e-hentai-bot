@@ -64,9 +64,12 @@ def searcheh(bot, job):
          for chat_id in chat_idList:
             messageDict = {"messageCate": "message",
                            "messageContent": ["------This is user {0}'s result------".format(str(td))]}
-            channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)         
-            messageDict = {'messageCate': "photo", "messageContent": toTelegramDict[td]["imageObjDict"]}
             channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
+            for obj in toTelegramDict[td]['imageObjDict']:
+               messageDict = {'messageCate': "photo", "messageContent": [toTelegramDict[td]["imageObjDict"][obj]]}
+               channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
+               messageDict = {'messageCate': "message", "messageContent": [obj]}
+               channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
             messageDict = {'messageCate': "message", "messageContent": toTelegramDict[td]["strList"]}
             channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id) 
          logger.info("User %s's result has been sent.", td)
@@ -79,14 +82,13 @@ def searcheh(bot, job):
 def channelmessage(bot, messageDict, chat_id): 
    messageContent = messageDict["messageContent"]
    for mC in messageContent:
-      err = 0        
+      err = 0
       for err in range(generalcfg.timeoutRetry):
          try:
             if messageDict['messageCate'] == 'photo':
-               bio = messageContent[mC]
+               bio = mC
                bio.seek(0)
                bot.send_photo(chat_id=chat_id, photo=bio)
-               del bio
             else:
                bot.send_message(chat_id=chat_id, text=mC)
          except:
@@ -97,8 +99,6 @@ def channelmessage(bot, messageDict, chat_id):
             err = 0
             break
       else:
-         if messageDict['messageCate'] == 'photo':
-            del bio
          print ("network issue")
          err = 0
 

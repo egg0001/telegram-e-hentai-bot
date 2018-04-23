@@ -12,7 +12,7 @@ pubChannelID = "" #Public channel ID, admin could send the result to this channe
 
 interval = (3600*6)  #The interval between every run of spiderfunction.
 
-timeoutRetry = 10  #Retry times to deal with the timeout issue.
+timeoutRetry = 5 #Retry times to deal with the timeout issue.
 
 forceCookiesEH = True
 
