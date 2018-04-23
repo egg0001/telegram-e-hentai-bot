@@ -167,7 +167,7 @@ ErrorSyntax = ('Oops, it seems that you have enter a wrong profile, '+
                'please check it and enter again.'
               )
 
-UserDataCheckFail = ('Oops, it seems that you are trying sonething wired in the user ' +
+UserDataCheckFail = ('Oops, it seems that you are trying something wired in the user ' +
                      'profile, please check it and enter again.'
                     )
 

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 import argparse
-from . import botconfig
+# from . import botconfig
+from tgbotmodules.spidermodules import generalcfg
 
 
 def searchparser():
@@ -55,7 +56,7 @@ def searchgenerate(generateDict):
       searchopt.eh = True
    else:
       searchopt.eh = False
-   searchopt.forcecookieseh = botconfig.forceCookiesEH
+   searchopt.forcecookieseh = generalcfg.forceCookiesEH
    return searchopt
 
 

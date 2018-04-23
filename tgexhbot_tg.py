@@ -14,7 +14,8 @@ from telegram.ext import ConversationHandler
 from tgbotconvhandler import messageanalyze
 from tgbotconvhandler import spiderfunction
 from tgbotmodules import replytext 
-from tgbotmodules import botconfig
+# from tgbotmodules import botconfig
+from tgbotmodules.spidermodules import generalcfg
 from tgbotmodules import userdatastore
 # from tgbotmodules import userdatastore
  
@@ -58,7 +59,7 @@ def searcheh(bot, job):
          if spiderDict[td]['userchenn']:
             chat_idList.append(spiderDict[td]['userchenn'])
          if spiderDict[td]["userpubchenn"] == True:
-            chat_idList.append(botconfig.pubChannelID)
+            chat_idList.append(generalcfg.pubChannelID)
          logger.info("Begin to send user %s's result.", td)
          for chat_id in chat_idList:
             messageDict = {"messageCate": "message",
@@ -73,13 +74,13 @@ def searcheh(bot, job):
    else: 
       logger.info("Could not gain any new result to user.")         
       messageDict = {"messageCate": "message", "messageContent": ["We have no new result"]}
-      channelmessage(bot=bot, messageDict=messageDict, chat_id=botconfig.pubChannelID)
+      channelmessage(bot=bot, messageDict=messageDict, chat_id=generalcfg.pubChannelID)
 
 def channelmessage(bot, messageDict, chat_id): 
    messageContent = messageDict["messageContent"]
    for mC in messageContent:
       err = 0        
-      for err in range(botconfig.timeoutRetry):
+      for err in range(generalcfg.timeoutRetry):
          try:
             if messageDict['messageCate'] == 'photo':
                bio = messageContent[mC]
@@ -102,7 +103,7 @@ def channelmessage(bot, messageDict, chat_id):
          err = 0
 
 def autoCreateJob(job):
-   job.run_repeating(searcheh, interval=botconfig.interval, first=5)
+   job.run_repeating(searcheh, interval=generalcfg.interval, first=5)
 
 def cancel(bot, update, user_data, chat_data):  
    update.message.reply_text(text=replytext.UserCancel)
@@ -116,7 +117,7 @@ def error(bot, update, error):
    logger.warning('Update "%s" caused error "%s"', update, error)
 
 def main():
-   updater = Updater(token=botconfig.token)
+   updater = Updater(token=generalcfg.token)
    dp =updater.dispatcher
    job=updater.job_queue
    conv_handler = ConversationHandler(

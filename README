@@ -17,12 +17,11 @@ PILLOW   https://pillow.readthedocs.io
 
 BASIC USAGE FOR BOT ADMIN
 
-1. Apply a bot at @BotFather on telegram. Then copy the token to token variable in tgbotmodules/botconfig.py.
+1. Apply a bot at @BotFather on telegram. Then copy the token to token variable in tgbotmodules/spidermodules/generalcfg.py.
 
-2. Create a private channel and add the bot created before as the admin. After that exploit some specified bots (like @getidsbot) to gain the channel ID. Once gained this ID, copy it to the pubChannelID variable in tgbotmodules/botconfig.py.
+2. Create a private channel and add the bot created before as the admin. After that exploit some specified bots (like @getidsbot) to gain the channel ID. Once gained this ID, copy it to the pubChannelID variable in tgbotmodules/spidermodules/generalcfg.py.
 
-3. RECOMMENDATION-View two separate config files (tgbotmodules/botconfig.py and tgbotmodules/spidermodules/generalcfg.py) to modify the running process of the bot. 
-(Since the history reason, this program has two config files to control different parts of it. I would fix it later.)
+3. RECOMMENDATION-View the config file (generalcfg.py) to customize the bot's functions. 
 
 4. Run tgexhbot_tg.py
 
