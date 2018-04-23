@@ -109,50 +109,6 @@ class MangaSpider():
       with open("{0}.mangalog".format(self.path), "w") as fo:
          json.dump(mangaDict, fo)
       return outDict
-      
-         
-
-
-
-      
-
-# def Sessiongen():
-#    mangasession = requests.Session()
-#    if len(generalcfg.headers) != 0:
-#       mangasession.headers.update(generalcfg.headers)
-#    else:
-#       headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36",}
-#       mangasession.headers.update(headers)
-#    proxypattern = re.compile(r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:\d{1,5})")
-#    if len(searchopt.proxy) != 0:
-#       proxy = proxypattern.search(searchopt.proxy).group(1)
-#       proxies = {"http": proxy, "https": proxy,}
-#       mangasession.proxies = proxies
-#    elif len(generalcfg.proxy) != 0:
-#       proxy = proxypattern.search(generalcfg.proxy).group(1)
-#       proxies = {"http": proxy, "https": proxy,}
-#       mangasession.proxies = proxies
-#       print (proxies)
-#    else:
-#       pass
-     
-#    if searchopt.eh == False:
-#       if len(searchopt.username) != 0 and len(searchopt.password) != 0:
-#           mangasession = ehlogin.ehlogin(username=searchopt.username, 
-#                                          password=searchopt.password,
-#                                          mangasession=mangasession
-#                                          )
-                                               
-#       else:                                                         
-#          if generalcfg.cookies:
-#             requests.utils.add_dict_to_cookiejar(mangasession.cookies, generalcfg.cookies)
-#          else:
-#             print ("Required cookies to access exhentai")
-#             quit()
-#    else:
-#       pass
-#    return mangasession
-
 
 def exhcookiestest(mangasessionTest, cookies, forceCookiesEH=False):   #Evaluate whether the cookies could access exh
    requests.utils.add_dict_to_cookiejar(mangasessionTest.cookies, cookies)
@@ -210,34 +166,6 @@ def Sessiongenfunc(searchopt, cookies):
       requests.utils.add_dict_to_cookiejar(mangasession.cookies, {"sl": "dm_1"})
    return mangasession      
 
-
-    
-  
-
-
-# def Spidercontrol(searchopt):
-#    mangasession = Sessiongen()
-#    stop = generator.Sleep(sleepstr=searchopt.rest)
-#    print (mangasession.headers)
-#    urls = generator.urlgenerate(searchopt)
-#    manga = MangaSpider(urls=urls, 
-#                        mangasession=mangasession, 
-#                        stop=stop, 
-#                        searchopt=searchopt)
-#    urlsdict = MangaSpider.pagedownload(manga)
-#    print (urlsdict)
-#    analysisurls = urlsdict.values()
-#    manga2 = MangaSpider(urls=analysisurls, 
-#                         mangasession=mangasession, 
-#                         searchopt=searchopt, 
-#                         stop=stop, 
-#                         path="./result/")
-#    outDict = MangaSpider.mangaanalysis(manga2)
-#    del outDict["imageObjDict"]
-#    print (outDict)
-#    generator.shgenerate(outputdict=outDict, searchopt=searchopt)
-#    return
-
 def Spidercontrolasfunc(searchopt, cookies, path):
    mangasession = Sessiongenfunc(searchopt=searchopt, 
                                  cookies=cookies)
@@ -261,48 +189,6 @@ def Spidercontrolasfunc(searchopt, cookies, path):
 
    del mangasession
    return outDict
-
-
-
-
-   
-
-# def searchinfo():
-#    parser = argparse.ArgumentParser(description='Search settings')
-#    parser.add_argument('-k', "--keyword", action='store', dest='keyword', default="", type=str, help='General keywords (might contain unexpected result)')
-#    parser.add_argument('-p', "--pages", action='store', dest='pages',default=5, type=int, help='Pages Limitation')
-#    parser.add_argument('-d', "--doujin", action='store_true', default=False, dest='doujinshi', help='Search doujin category')
-#    parser.add_argument('-m', "--manga", action='store_true', default=False, dest='manga', help='Search manga category')
-#    parser.add_argument("--artistcg", action='store_true', default=False, dest='artistcg', help='Search artistcg category')
-#    parser.add_argument("--gamecg", action='store_true', default=False, dest='gamecg', help='Search gamecg category')
-#    parser.add_argument("--western", action='store_true', default=False, dest='western', help='Search western category')
-#    parser.add_argument("--non_h", action='store_true', default=False, dest='non_h', help='Search non_h category')
-#    parser.add_argument("--cosplay", action='store_true', default=False, dest='cosplay', help='Search cosplay category')
-#    parser.add_argument("--asianporn", action='store_true', default=False, dest='asianporn', help='Search asianporn category')
-#    parser.add_argument("--imageset", action='store_true', default=False, dest="imageset", help="Search imageset category")
-#    parser.add_argument("--cate_misc", action='store_true', default=False, dest='cate_misc', help='Search misc category')
-#    parser.add_argument("--pagefilteroff", action='store_true', default=False, dest='pagefilteroff', help="Disable the pagefilter sorting the dankoubon in manga category, this filter's default is ON while users ONLY SEARCH manga category and would automatically TURN OFF while search containing other categories")
-#    parser.add_argument("--eh", action='store_true', default=False, dest='eh', help='Search the e-hentai instead of exhentai (do not require cookies, username and password)')
-#    parser.add_argument('-a', "--artist", action='append', dest='artist', default=[], help='Artist keyword')
-#    parser.add_argument('-g', "--group", action='append', dest='group', default=[], help='Group keyword')
-#    parser.add_argument("--male", action='append', dest='male', default=[], help="Male's tags")
-#    parser.add_argument("--parody", action='append', dest='parody', default=[], help="Parody's tags")
-#    parser.add_argument("--character", action='append', dest='character', default=[], help="Character's tags")
-#    parser.add_argument("--female", action='append', dest='female', default=[], help="Female's tags")
-#    parser.add_argument("--misc", action='append', dest='misc', default=[], help="Misc's tags")
-#    parser.add_argument("--username", action='store', dest='username', default="", type=str, help='Exploit username and password instead of cookies in the cfg file to login exh, however exploiting the cookies is recommended')
-#    parser.add_argument("--password", action='store', dest='password', default="", type=str, help='Exploit username and password instead of cookies in the cfg file to login exh, however exploiting the cookies is recommended')
-#    parser.add_argument("--proxy", action='store', dest='proxy', type=str, default="", help="Exploit proxy to access the site(example 'http://host:port'")
-#    parser.add_argument("--full_gallery", action='store_true', default=False, dest='fulgal', help='Let the xeH download the full gallery (might consume huge amount of date)')
-#    parser.add_argument("--rest", action='store', default="3-8", dest='rest', help='Pause between every request to simulate human active, defult is 3-8 sec(example 3 or 3-8)')
-#    parser.add_argument("--nopreviewimg", action='store_true', default=False, dest='nopreviewimg', help='Disable the preview image download function(if the net connection is unpromising, use this parament')
-#    parser.add_argument("--forcecookieseh", action='store_true', default=False, dest='forcecookieseh', help="Try to Exploit users' cookies to search e-h if this cookies could not search exh.")
-#    searchopt = parser.parse_args()
-#    return searchopt
-
-# if __name__ == "__main__":
-#    searchopt = searchinfo()
-#    Spidercontrol(searchopt)
 
 
       
