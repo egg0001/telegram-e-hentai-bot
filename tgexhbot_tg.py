@@ -75,8 +75,8 @@ def searcheh(bot, job):
          logger.info("User %s's result has been sent.", td)
       logger.info("All users' result has been sent.")
    else: 
-      logger.info("Could not gain any new result to user.")         
-      messageDict = {"messageCate": "message", "messageContent": ["We have no new result"]}
+      logger.info("Could not gain any new result to users.")         
+      messageDict = {"messageCate": "message", "messageContent": ["We do not have any new result"]}
       channelmessage(bot=bot, messageDict=messageDict, chat_id=generalcfg.pubChannelID)
 
 def channelmessage(bot, messageDict, chat_id): 
@@ -86,9 +86,8 @@ def channelmessage(bot, messageDict, chat_id):
       for err in range(generalcfg.timeoutRetry):
          try:
             if messageDict['messageCate'] == 'photo':
-               bio = mC
-               bio.seek(0)
-               bot.send_photo(chat_id=chat_id, photo=bio)
+               mC.seek(0)
+               bot.send_photo(chat_id=chat_id, photo=mC)
             else:
                bot.send_message(chat_id=chat_id, text=mC)
          except:
