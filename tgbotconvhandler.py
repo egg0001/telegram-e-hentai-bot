@@ -3,12 +3,10 @@ import json
 import logging
 from ast import literal_eval
 from tgbotmodules import userdatastore
-# from tgbotmodules import botconfig
 from tgbotmodules import replytext
 from tgbotmodules.spidermodules import generator # use the sleep function
 from tgbotmodules import exhspider
 from tgbotmodules import userdatastore
-# from tgbotmodules import botconfig
 from tgbotmodules.spidermodules import generalcfg
 from tgbotmodules import searchoptgen 
 from io import BytesIO 
