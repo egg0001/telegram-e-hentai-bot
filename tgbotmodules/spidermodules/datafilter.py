@@ -137,10 +137,9 @@ def artistmatch(artist, artistkeys):  #should rewrite to support multiple groups
    
    
 def genmangainfo(htmlcontent, url, searchopt, mangasession, path):   
-   str = htmlcontent
    url = url
    entitlepattern = re.compile(r'''div id="gd2"><h1 id="gn">(.+)</h1><h1 id="gj">''')
-   entitlres = entitlepattern.finditer(str)
+   entitlres = entitlepattern.finditer(htmlcontent)
    entitle =[]
 #    print ("----------title eng----------")
    for match in entitlres:
@@ -148,7 +147,7 @@ def genmangainfo(htmlcontent, url, searchopt, mangasession, path):
       entitle.append(match.group(1))
    
    jptitlepattern = re.compile(r'''<h1 id="gj">(.+)</h1></div>''')
-   jptitleres = jptitlepattern.finditer(str)
+   jptitleres = jptitlepattern.finditer(htmlcontent)
    jptitle = []
 #    print ("----------title jp----------")
    for match in jptitleres:
@@ -156,21 +155,21 @@ def genmangainfo(htmlcontent, url, searchopt, mangasession, path):
       jptitle.append(match.group(1))
 
    parodypattern = re.compile(r'''<div id="td_parody:([A-Za-z0-9_ -]+)" class=''')
-   parodyres = parodypattern.finditer(str)
+   parodyres = parodypattern.finditer(htmlcontent)
    parody = []
    for match in parodyres:
       # print (match.group(1))
       parody.append(match.group(1))
 
    characterpattern = re.compile(r'''<div id="td_character:([A-Za-z0-9_ -]+)" class=''')
-   characterres = characterpattern.finditer(str)
+   characterres = characterpattern.finditer(htmlcontent)
    character = []
    for match in characterres:
       # print (match.group(1))
       character.append(match.group(1))
    
    langpattern = re.compile(r'''Language:</td><td class="gdt2">(\w+) ''')
-   langres = langpattern.finditer(str)
+   langres = langpattern.finditer(htmlcontent)
    lang = []
 #    print ("----------language----------")
    for match in langres:
@@ -178,7 +177,7 @@ def genmangainfo(htmlcontent, url, searchopt, mangasession, path):
       lang.append(match.group(1))
    
    pagespattern = re.compile(r'''Length:</td><td class="gdt2">(\d+) pages''')
-   pageres = pagespattern.finditer(str)
+   pageres = pagespattern.finditer(htmlcontent)
    length = []
 #    print ("----------length----------")
    for match in pageres:
@@ -186,7 +185,7 @@ def genmangainfo(htmlcontent, url, searchopt, mangasession, path):
       length.append(match.group(1))
    
    artistpattern = re.compile(r'''<div id="td_artist:([A-Za-z0-9_ -]+)" class=''')
-   artistres = artistpattern.finditer(str)
+   artistres = artistpattern.finditer(htmlcontent)
    artist = []
 #    print ("----------artist----------")
    for match in artistres:
@@ -195,7 +194,7 @@ def genmangainfo(htmlcontent, url, searchopt, mangasession, path):
 
    femalepattern = re.compile(r'''<div id="td_female:([A-Za-z0-9_ -]+)" class''')
 
-   femaleres = femalepattern.finditer(str)
+   femaleres = femalepattern.finditer(htmlcontent)
    female_tags = []
 #    print ("----------female tags----------")
    for match in femaleres:
@@ -203,7 +202,7 @@ def genmangainfo(htmlcontent, url, searchopt, mangasession, path):
       female_tags.append(match.group(1))
    
    malepattern = re.compile(r'''<div id="td_male:([A-Za-z0-9_ -]+)" class''')
-   maleres = malepattern.finditer(str)
+   maleres = malepattern.finditer(htmlcontent)
    male_tags = []
 #    print ("----------male tags----------")
    for match in maleres:
@@ -211,7 +210,7 @@ def genmangainfo(htmlcontent, url, searchopt, mangasession, path):
       male_tags.append(match.group(1))
    
    miscpattern = re.compile(r'''<div id="td_([A-Za-z0-9_ -]+)" class=''')
-   miscres = miscpattern.finditer(str)
+   miscres = miscpattern.finditer(htmlcontent)
    misc_tags =[]
 #    print ("----------misc tags----------")
    for match in miscres:
@@ -220,7 +219,7 @@ def genmangainfo(htmlcontent, url, searchopt, mangasession, path):
    
    
    grouppattern = re.compile(r'''div id="td_group:([A-Za-z0-9_ -]+)" class=''')
-   groupres = grouppattern.finditer(str)
+   groupres = grouppattern.finditer(htmlcontent)
    group = []
 #    print ("----------group----------")
    for match in  groupres:
@@ -263,34 +262,62 @@ def genmangainfo(htmlcontent, url, searchopt, mangasession, path):
       imageDict = {}   # Store the image object in memory and send them to spider
       if searchopt.nopreviewimg == False:
          imagepattern = re.compile(r'''(https://[a-z0-9]*\.*\w+\.org/[a-z0-9]+/[a-z0-9]+/[a-z0-9]+/[a-z0-9_-]+)\.(\w{3,4})''')
-         previewimgres = imagepattern.finditer(str)
-         previerimg = []
-         for match in previewimgres:
-            previerimg.append(match.group())
-            previerimg.append(match.group(2))
-         if previerimg:
-            print ("----------Preview image download start----------")
-            if jptitle:
-               filename = "{0}.{1}".format(jptitle[0], previerimg[-1])
-            #    filename = jptitle[0] + '.' + previerimg[1]
-               previewurl = previerimg[0]
-               tempDict = download.previewdltomenory(url=previewurl, 
-                                                     mangasession=mangasession, 
-                                                     filename=filename,
-                                                    )
-               imageDict.update(tempDict)
-            elif entitle:
-               filename = "{0}.{1}".format(entitle[0], previerimg[-1])
-               previewurl = previerimg[0]
-               tempDict = download.previewdltomenory(url=previewurl, 
-                                                     mangasession=mangasession, 
-                                                     filename=filename,
-                                                    )  
-               imageDict.update(tempDict)
+         previewimages = imagepattern.finditer(htmlcontent)
+         previewimg = {}
+         imagePatternBig = re.compile(r'''href="(https://[a-z-]+\.org/[a-z0-9]/[a-z0-9]+/[a-z0-9]+\-1)"''')
+         previewImagesBig = imagePatternBig.finditer(htmlcontent)
+         for match in previewimages:
+            previewimg.update({'imageurlSmall': match.group()})
+            previewimg.update({'imageForm': match.group(2)})
+            print (previewimg['imageForm'])
+         for match in previewImagesBig:
+            previewimg.update({'imageurlBig': match.group(1)})
+            print (match.group(1))
+         if generalcfg.dlFullPreviewImage == True:
+            if previewimages:  
+               print ("----------Full preview image download start----------")
+               if jptitle:
+                  filename = "{0}.{1}".format(jptitle[0], previewimg['imageForm'])
+                  previewimg.update({'filename': filename})
+                  tempDict = download.previewDlToMemoryBig(previewimg=previewimg,
+                                                           mangasession=mangasession
+                                                           )
+                  # Pass the dict previewimage itself to download relating functions
+                  imageDict.update(tempDict)
+               elif entitle:
+                  filename = "{0}.{1}".format(jptitle[0], previewimg['imageForm'])
+                  previewimg.update({'filename': filename})
+                  # filename ="{0}.{1}".format(entitle[0], previerimg['imageForm'])
+                  tempDict = download.previewDlToMemoryBig(previewimg=previewimg,
+                                                           mangasession=mangasession
+                                                           )
+                  imageDict.update(tempDict)
+               else: 
+                  pass
+         else: 
+            if previewimg:
+               print ("----------Preview image download start----------")
+               if jptitle:
+                  filename = "{0}.{1}".format(jptitle[0], previewimg['imageForm'])
+            #       filename = jptitle[0] + '.' + previerimg[1]
+                  previewimg.update({'filename': filename})
+                  # previewurl = previewimg['imageurlSmall']
+                  tempDict = download.previewdltomenory(previewimg=previewimg, 
+                                                        mangasession=mangasession, 
+                                                       )
+                  imageDict.update(tempDict)
+               elif entitle:
+                  filename = "{0}.{1}".format(entitle[0], previewimg['imageForm'])
+                  previewimg.update({'filename': filename})
+                  # previewurl = previewimg['imageurlSmall']
+                  tempDict = download.previewdltomenory(previewimg=previewimg, 
+                                                        mangasession=mangasession,
+                                                       )  
+                  imageDict.update(tempDict)
+               else:
+                  pass
             else:
                pass
-         else:
-            pass
       else:
          print ("----------Preview image download DISABLE----------")
       mangainfo.update({"imageDict": imageDict})

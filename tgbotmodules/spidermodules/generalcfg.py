@@ -30,8 +30,11 @@ langkeys = ['RUS', 'Indonesian', 'Osomatsu-san', 'English', 'Korean', 'korean', 
 
 noEngOnlyGallery = True  # Discard all the gerallies only containing English title and not suitable to Eastern users.
 
-proxy = [] # This test proxy setting is ONLY avaliable for the spider modules (PLEASE KEEP IT AS A EMPTY LIST) 
+proxy = ['127.0.0.1:8113'] # This test proxy setting is ONLY avaliable for the spider modules (PLEASE KEEP IT AS A EMPTY LIST) 
 
+dlFullPreviewImage = True
+
+dlRetry = 3
 
 unwantedfemale = ['ssbbw']
 unwantedmale = ['males_only'] 
