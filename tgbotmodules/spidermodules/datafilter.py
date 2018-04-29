@@ -151,9 +151,9 @@ def genmangainfo(htmlcontent, url, searchopt, mangasession, path):
    jptitle = []
 #    print ("----------title jp----------")
    for match in jptitleres:
-      # print (match.group(1))
+         # print (match.group(1))
       jptitle.append(match.group(1))
-
+#    print (jptitle)
    parodypattern = re.compile(r'''<div id="td_parody:([A-Za-z0-9_ -]+)" class=''')
    parodyres = parodypattern.finditer(htmlcontent)
    parody = []
@@ -268,11 +268,13 @@ def genmangainfo(htmlcontent, url, searchopt, mangasession, path):
          previewImagesBig = imagePatternBig.finditer(htmlcontent)
          for match in previewimages:
             previewimg.update({'imageurlSmall': match.group()})
+            # print (match.group())
             previewimg.update({'imageForm': match.group(2)})
-            print (previewimg['imageForm'])
+            # print (previewimg['imageForm'])
+            # print (match.group(2))
          for match in previewImagesBig:
             previewimg.update({'imageurlBig': match.group(1)})
-            print (match.group(1))
+            # print (match.group(1))
          if generalcfg.dlFullPreviewImage == True:
             if previewimages:  
                print ("----------Full preview image download start----------")
@@ -285,7 +287,7 @@ def genmangainfo(htmlcontent, url, searchopt, mangasession, path):
                   # Pass the dict previewimage itself to download relating functions
                   imageDict.update(tempDict)
                elif entitle:
-                  filename = "{0}.{1}".format(jptitle[0], previewimg['imageForm'])
+                  filename = "{0}.{1}".format(entitle[0], previewimg['imageForm'])
                   previewimg.update({'filename': filename})
                   # filename ="{0}.{1}".format(entitle[0], previerimg['imageForm'])
                   tempDict = download.previewDlToMemoryBig(previewimg=previewimg,

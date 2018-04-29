@@ -57,6 +57,7 @@ class MangaSpider():
          else:
             print ("{0} is redundant, discard.".format(url))
       for url in self.urls:
+         print (url)
          r = mangasession.get(url)
          htmlcontent = r.text
          tempdict = datafilter.genmangainfo(htmlcontent=htmlcontent, 

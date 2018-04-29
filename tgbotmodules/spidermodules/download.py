@@ -57,29 +57,29 @@ def imageDownload(mangasession, previewimg, fromBig=False):
    imageDict = {}
    previewimgUrl = ""
    if fromBig == True:
-      print ("Try to access the first image url in the gallery.")
-      print (previewimg['imageurlBig'])
+      # print ("Try to access the first image url in the gallery.")
+      # print (previewimg['imageurlBig'])
       time.sleep(1)
       for err in range(generalcfg.dlRetry):
          try:
             tempUrl = previewimg['imageurlBig']
             print (tempUrl)
             r = mangasession.get(tempUrl)
-            print ("Accessed to the first page")
-            print (r)
+            # print ("Accessed to the first page")
+            # print (r)
             htmlcontent = r.text
-            print (htmlcontent)
+            # print (htmlcontent)
             imagepattern = re.compile(r'''src=\"(http://[0-9:\.]+\/[a-zA-Z0-9]\/[a-zA-Z0-9-]+\/keystamp=[a-zA-Z0-9-]+;fileindex=[a-zA-Z0-9]+;xres=[a-zA-Z0-9]+\/.+\.[a-zA-Z]+)" style=''')
             matchUrls = imagepattern.search(htmlcontent)
             previewimgUrl = matchUrls.group(1)
-            print (previewimgUrl)
+            # print (previewimgUrl)
          except:
             print ('Access error.')
             err += 1
             time.sleep(0.5)
          else:
-            print ('Access complete.')
-            print (previewimgUrl)
+            # print ('Access complete.')
+            # print (previewimgUrl)
             time.sleep(0.5)
             err = 0
             break
@@ -137,7 +137,7 @@ def previewDlToMemoryBig(previewimg, mangasession):
 #    bio.name = previewimg['filename']
 #    i.save(bio)
 #    imageDict = {previewimg['filename']: bio}
-   print ('This is big image download.')
+#    print ('This is big image download.')
    imageDict = imageDownload(previewimg=previewimg,
                              mangasession=mangasession,
                              fromBig=True
