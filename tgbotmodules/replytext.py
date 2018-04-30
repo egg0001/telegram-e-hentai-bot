@@ -63,7 +63,9 @@ CateError = 'Oops, you have enter a wrong categories list, please check it and r
 ToUserChenn = ("Now please input your own channel name(without @), " + 
                "or channel ID (recommended)" +
                "and this bot would automatically send " +
-               "the result to this chennal in every SIX hours"
+               "the result to this chennal in every SIX hours" +
+               "If you only hope to send the result to bot ADMIN's channel, " +
+               "please type 'EMPTY'."
               )
 
 #--------------------userchenn section---------------------------------------

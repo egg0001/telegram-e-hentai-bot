@@ -8,6 +8,7 @@ import json
 from PIL import Image
 import io
 import re
+import random
 from . import generalcfg
 
 
@@ -54,16 +55,17 @@ def Previewdl(url, mangasession, filename, path):
 
 def imageDownload(mangasession, previewimg, fromBig=False):
    err = 0
+   previewimg.update({'filename': '{0}.{1}'.format(previewimg['title'], previewimg['imageForm'])})
    imageDict = {}
    previewimgUrl = ""
    if fromBig == True:
       # print ("Try to access the first image url in the gallery.")
       # print (previewimg['imageurlBig'])
-      time.sleep(1)
+      time.sleep(random.uniform(1, 2))
       for err in range(generalcfg.dlRetry):
          try:
             tempUrl = previewimg['imageurlBig']
-            print (tempUrl)
+            # print (tempUrl)
             r = mangasession.get(tempUrl)
             # print ("Accessed to the first page")
             # print (r)
@@ -86,6 +88,7 @@ def imageDownload(mangasession, previewimg, fromBig=False):
       else:
          print ('Newwork issue')
          err = 0
+         previewimgUrl = previewimg['imageurlSmall']
    else:
       previewimgUrl = previewimg['imageurlSmall']
 
@@ -112,42 +115,41 @@ def imageDownload(mangasession, previewimg, fromBig=False):
 
 
 def previewdltomenory(previewimg, mangasession):
-#    previewimage = mangasession.get(previewimg['imageurlSmall'])
-#    previewimage.content
-#    i = Image.open(io.BytesIO(previewimage.content))
-#    bio = io.BytesIO()
-#    bio.name = previewimg['filename']
-#    i.save(bio)
-#    imageDict = {previewimg['filename']: bio}
-   imageDict = imageDownload(previewimg=previewimg,
-                             mangasession=mangasession
-                             )
-   return imageDict
-
-def previewDlToMemoryBig(previewimg, mangasession):
-#    previewImage= mangasession.get(previewimg['imageurlBig'])
-#    htmlcontent = previewImage.text
-#    imagepattern = re.compile(r"src=\"(http://[0-9:\.]+\/[a-z0-9]\/[a-z0-9-]+\/keystamp=[a-z0-9-]+;fileindex=[a-z0-9]+;xres=[0-9/]+\.[a-z]+)\"")
-#    imageUrl = imagepattern.finditer(htmlcontent)
-#    time.sleep(0.5)
-#    previewimage = mangasession.get(imageUrl)
-#    previewimage.content
-#    i = Image.open(io.BytesIO(previewimage.content))
-#    bio = io.BytesIO()
-#    bio.name = previewimg['filename']
-#    i.save(bio)
-#    imageDict = {previewimg['filename']: bio}
-#    print ('This is big image download.')
-   imageDict = imageDownload(previewimg=previewimg,
-                             mangasession=mangasession,
-                             fromBig=True
-                            )
-   if imageDict:
+   imageDict = {}
+   if previewimg['imageForm']:
       pass
    else:
+      previewimg['imageForm'] = 'jpg'
+   if previewimg['imageurlSmall']:
+
       imageDict = imageDownload(previewimg=previewimg,
                                 mangasession=mangasession
                                 )
+   else:
+      pass
+   return imageDict
+
+def previewDlToMemoryBig(previewimg, mangasession):
+   imageDict = {}
+   if previewimg['imageForm']:
+      pass
+   else:
+      previewimg['imageForm'] = 'jpg'
+   if previewimg['imageurlBig']:
+      imageDict = imageDownload(previewimg=previewimg,
+                                mangasession=mangasession,
+                                fromBig=True
+                               )
+   else:
+      pass
+   if imageDict:
+      pass
+   elif previewimg['imageurlSmall']:
+      imageDict = imageDownload(previewimg=previewimg,
+                                mangasession=mangasession
+                                )
+   else:
+      pass
    return imageDict
    
       

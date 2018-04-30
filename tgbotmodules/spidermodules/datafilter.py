@@ -14,7 +14,6 @@ def exhtest(htmlContent):
    return usefulCookies
    
 def Grossdataspider(htmlcontent, searchopt):
-   # separate the htmlcontent(str) to shorter strs  
    pattern1 = re.compile(r"id1")
    matchs1 = pattern1.finditer(htmlcontent)
    beginlist = []
@@ -257,69 +256,64 @@ def genmangainfo(htmlcontent, url, searchopt, mangasession, path):
             print ("----------{0}----------".format(item[0]))
             for i in item[1]:
                print (i)
-      print ("----------mangainfo end----------")
-      # The function download.Previewdl would download the first img's small version. 
+      print ("----------mangainfo end----------") 
       imageDict = {}   # Store the image object in memory and send them to spider
       if searchopt.nopreviewimg == False:
          imagepattern = re.compile(r'''(https://[a-z0-9]*\.*\w+\.org/[a-z0-9]+/[a-z0-9]+/[a-z0-9]+/[a-z0-9_-]+)\.(\w{3,4})''')
-         previewimages = imagepattern.finditer(htmlcontent)
-         previewimg = {}
+         previewimages = imagepattern.search(htmlcontent)
+         previewimg = {'imageurlSmall': '', 
+                       'imageForm': '', 
+                       'title': '',
+                       'imageurlBig': ''}  # Store different kinds of data for the download functions.
          imagePatternBig = re.compile(r'''href="(https://[a-z-]+\.org/[a-z0-9]/[a-z0-9]+/[a-z0-9]+\-1)"''')
-         previewImagesBig = imagePatternBig.finditer(htmlcontent)
-         for match in previewimages:
-            previewimg.update({'imageurlSmall': match.group()})
-            # print (match.group())
-            previewimg.update({'imageForm': match.group(2)})
+         previewImagesBig = imagePatternBig.search(htmlcontent)
+         if previewimages:
+            previewimg['imageurlSmall'] = previewimages.group()
+            # print (previewimages.group())
+            previewimg['imageForm'] = previewimages.group(2)
             # print (previewimg['imageForm'])
-            # print (match.group(2))
-         for match in previewImagesBig:
-            previewimg.update({'imageurlBig': match.group(1)})
-            # print (match.group(1))
-         if generalcfg.dlFullPreviewImage == True:
-            if previewimages:  
-               print ("----------Full preview image download start----------")
-               if jptitle:
-                  filename = "{0}.{1}".format(jptitle[0], previewimg['imageForm'])
-                  previewimg.update({'filename': filename})
-                  tempDict = download.previewDlToMemoryBig(previewimg=previewimg,
-                                                           mangasession=mangasession
-                                                           )
-                  # Pass the dict previewimage itself to download relating functions
-                  imageDict.update(tempDict)
-               elif entitle:
-                  filename = "{0}.{1}".format(entitle[0], previewimg['imageForm'])
-                  previewimg.update({'filename': filename})
-                  # filename ="{0}.{1}".format(entitle[0], previerimg['imageForm'])
-                  tempDict = download.previewDlToMemoryBig(previewimg=previewimg,
-                                                           mangasession=mangasession
-                                                           )
-                  imageDict.update(tempDict)
-               else: 
-                  pass
-         else: 
-            if previewimg:
-               print ("----------Preview image download start----------")
-               if jptitle:
-                  filename = "{0}.{1}".format(jptitle[0], previewimg['imageForm'])
-            #       filename = jptitle[0] + '.' + previerimg[1]
-                  previewimg.update({'filename': filename})
-                  # previewurl = previewimg['imageurlSmall']
-                  tempDict = download.previewdltomenory(previewimg=previewimg, 
-                                                        mangasession=mangasession, 
+            # print (previewimages.group(2))
+         if previewImagesBig:
+            previewimg['imageurlBig'] = previewImagesBig.group(1)
+            # print (previewImagesBig.group(1))
+         if generalcfg.dlFullPreviewImage == True and previewimg:
+            print ("----------Full preview image download start----------")
+            if jptitle:
+               previewimg['title'] = jptitle[0]
+               tempDict = download.previewDlToMemoryBig(previewimg=previewimg,
+                                                        mangasession=mangasession
                                                        )
-                  imageDict.update(tempDict)
-               elif entitle:
-                  filename = "{0}.{1}".format(entitle[0], previewimg['imageForm'])
-                  previewimg.update({'filename': filename})
-                  # previewurl = previewimg['imageurlSmall']
+            elif entitle:
+               if generalcfg.noEngOnlyGallery == True and any(i in lang for i in generalcfg.langkeys):
+                  tempDict = {}
+               else:
+                  previewimg['title'] = entitle[0]
+                  tempDict = download.previewDlToMemoryBig(previewimg=previewimg,
+                                                        mangasession=mangasession
+                                                       )
+            else: 
+               tempDict = {}
+            imageDict.update(tempDict)
+         elif previewimg: 
+            print ("----------Preview image download start----------")
+            if jptitle:
+               previewimg['title'] = jptitle[0]
+               tempDict = download.previewdltomenory(previewimg=previewimg, 
+                                                     mangasession=mangasession, 
+                                                    )
+            elif entitle:
+               if generalcfg.noEngOnlyGallery == True and any(i in lang for i in generalcfg.langkeys):
+                  tempDict = {}
+               else:
+                  previewimg['title'] = entitle[0]
                   tempDict = download.previewdltomenory(previewimg=previewimg, 
                                                         mangasession=mangasession,
-                                                       )  
-                  imageDict.update(tempDict)
-               else:
-                  pass
+                                                       )
             else:
-               pass
+               tempDict = {}
+            imageDict.update(tempDict)
+         else:
+            pass
       else:
          print ("----------Preview image download DISABLE----------")
       mangainfo.update({"imageDict": imageDict})

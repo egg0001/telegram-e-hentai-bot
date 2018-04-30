@@ -68,7 +68,7 @@ class MangaSpider():
 
          if tempdict:
             if tempdict[url]:
-               print (tempdict)
+            #    print (tempdict)
                if tempdict[url].get("jptitle") != None:
                   outjptitle = tempdict[url].get("jptitle")[0]    
                   strDict.update({outjptitle: url})
@@ -92,8 +92,24 @@ class MangaSpider():
                      userInfoDict.update(tempdict)
                   else:
                      pass
-               else: 
-                  pass
+               elif generalcfg.noEngOnlyGallery == True:
+                  # print (tempdict)
+                  if any(i in tempdict[url]['lang'] for i in generalcfg.langkeys):
+                     pass
+                  elif tempdict[url].get("entitle") != None:
+                     outentitle = tempdict[url].get("entitle")[0]
+                     strDict.update({outentitle: url})
+                     if tempdict["imageDict"]:
+                        imageObjDict.update(tempdict["imageDict"])
+                        del tempdict["imageDict"]
+                     else:
+                        print ("Image missed")
+                     print ("----------entitle updated----------")
+                     userInfoDict.update(tempdict)
+                  else:
+                     pass
+               else:
+                  pass    
             else:
                pass 
          else:

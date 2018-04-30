@@ -119,8 +119,8 @@ def userranges(inputStr, user_data, chat_data, logger):
          outputTextList.append(outputTextRangeError)
          chat_data.update({'state': 'userranges'})
       else:
-        if ranges > 5:
-           ranges = 5
+        if ranges > generalcfg.userPageLimit:
+           ranges = generalcfg.userPageLimit
         user_data.update({"userranges": ranges})
         outputTextToUserCate = replytext.ToUserCate
         outputTextList.append(outputTextToUserCate)
@@ -417,9 +417,9 @@ def advcreate(inputStr, user_data, chat_data, logger):
          outputTextList.append(outputTextUserRangesValueError)
       
       else:
-         if tempuserdata["userranges"] > 5:
-            logger.error("The INCORRECT userranges value of user %s is %d, Limit to 5", user_data['actualusername'], tempuserdata["userranges"]) 
-            tempuserdata["userranges"] = 5
+         if tempuserdata["userranges"] > generalcfg.userPageLimit:
+            logger.error("The INCORRECT userranges value of user %s is %d, Limit to %d", user_data['actualusername'], tempuserdata["userranges"], generalcfg.userPageLimit) 
+            tempuserdata["userranges"] = generalcfg.userPageLimit
             outputTextRangeExcess = replytext.RangeExcess
             outputTextList.append(outputTextRangeExcess)
          if chat_data["fromedit"] == True:
