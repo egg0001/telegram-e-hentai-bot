@@ -57,6 +57,7 @@ class MangaSpider():
          else:
             print ("{0} is redundant, discard.".format(url))
       for url in self.urls:
+         print (url)
          r = mangasession.get(url)
          htmlcontent = r.text
          tempdict = datafilter.genmangainfo(htmlcontent=htmlcontent, 
@@ -67,26 +68,48 @@ class MangaSpider():
 
          if tempdict:
             if tempdict[url]:
-               print (tempdict)
+            #    print (tempdict)
                if tempdict[url].get("jptitle") != None:
-                  outjptitle = tempdict[url].get("jptitle")[0]
+                  outjptitle = tempdict[url].get("jptitle")[0]    
                   strDict.update({outjptitle: url})
-                  imageObjDict.update(tempdict["imageDict"])
-                  del tempdict["imageDict"]
+                  if tempdict["imageDict"]:
+                     imageObjDict.update(tempdict["imageDict"])
+                     del tempdict["imageDict"]
+                  else:
+                     print ("Image missed")
                   print ("----------jptitle updated----------")
                   userInfoDict.update(tempdict)
-               elif generalcfg.noEngOnlyGallery == False:   # Say goodbye to all mind fucking English galleries.
+               elif generalcfg.noEngOnlyGallery == False or tempdict[url].get('land') == None:   # Say goodbye to all mind fucking English galleries.
                   if tempdict[url].get("entitle") != None:
                      outentitle = tempdict[url].get("entitle")[0]
                      strDict.update({outentitle: url})
-                     imageObjDict.update(tempdict["imageDict"])
-                     del tempdict["imageDict"]
+                     if tempdict["imageDict"]:
+                        imageObjDict.update(tempdict["imageDict"])
+                        del tempdict["imageDict"]
+                     else:
+                        print ("Image missed")
                      print ("----------entitle updated----------")
                      userInfoDict.update(tempdict)
                   else:
                      pass
-               else: 
-                  pass
+               elif generalcfg.noEngOnlyGallery == True:
+                  # print (tempdict)
+                  if any(i in tempdict[url]['lang'] for i in generalcfg.langkeys):
+                     pass
+                  elif tempdict[url].get("entitle") != None:
+                     outentitle = tempdict[url].get("entitle")[0]
+                     strDict.update({outentitle: url})
+                     if tempdict["imageDict"]:
+                        imageObjDict.update(tempdict["imageDict"])
+                        del tempdict["imageDict"]
+                     else:
+                        print ("Image missed")
+                     print ("----------entitle updated----------")
+                     userInfoDict.update(tempdict)
+                  else:
+                     pass
+               else:
+                  pass    
             else:
                pass 
          else:

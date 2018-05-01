@@ -110,4 +110,5 @@ functiontest.py
 spidertest.py
 userdata/
 searchresult/
-
+mangacontentDL.py
+tempfiles/

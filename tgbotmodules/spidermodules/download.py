@@ -7,6 +7,9 @@ import time
 import json
 from PIL import Image
 import io
+import re
+import random
+from . import generalcfg
 
 
 
@@ -50,16 +53,105 @@ def Previewdl(url, mangasession, filename, path):
    handle.close()
    return
 
-def previewdltomenory(url, mangasession, filename):
-   fileNameList = filename.split(".")
-   previewimage = mangasession.get(url)
-   previewimage.content
-   i = Image.open(io.BytesIO(previewimage.content))
-   bio = io.BytesIO()
-   bio.name = filename
-   i.save(bio)
-   imageDict = {filename: bio}
+def imageDownload(mangasession, previewimg, fromBig=False):
+   err = 0
+   previewimg.update({'filename': '{0}.{1}'.format(previewimg['title'], previewimg['imageForm'])})
+   imageDict = {}
+   previewimgUrl = ""
+   if fromBig == True:
+      # print ("Try to access the first image url in the gallery.")
+      # print (previewimg['imageurlBig'])
+      time.sleep(random.uniform(1, 2))
+      for err in range(generalcfg.dlRetry):
+         try:
+            tempUrl = previewimg['imageurlBig']
+            # print (tempUrl)
+            r = mangasession.get(tempUrl)
+            # print ("Accessed to the first page")
+            # print (r)
+            htmlcontent = r.text
+            # print (htmlcontent)
+            imagepattern = re.compile(r'''src=\"(http://[0-9:\.]+\/[a-zA-Z0-9]\/[a-zA-Z0-9-]+\/keystamp=[a-zA-Z0-9-]+;fileindex=[a-zA-Z0-9]+;xres=[a-zA-Z0-9]+\/.+\.[a-zA-Z]+)" style=''')
+            matchUrls = imagepattern.search(htmlcontent)
+            previewimgUrl = matchUrls.group(1)
+            # print (previewimgUrl)
+         except:
+            print ('Access error.')
+            err += 1
+            time.sleep(0.5)
+         else:
+            # print ('Access complete.')
+            # print (previewimgUrl)
+            time.sleep(0.5)
+            err = 0
+            break
+      else:
+         print ('Newwork issue')
+         err = 0
+         previewimgUrl = previewimg['imageurlSmall']
+   else:
+      previewimgUrl = previewimg['imageurlSmall']
+
+   if previewimgUrl:
+      for err in range(generalcfg.dlRetry):
+         try:
+            previewimage = mangasession.get(previewimgUrl)
+            previewimage.content
+            i = Image.open(io.BytesIO(previewimage.content))
+            bio = io.BytesIO()
+            bio.name = previewimg['filename']
+            i.save(bio)
+            imageDict = {previewimg['filename']: bio}
+         except:
+            err += 1
+            time.sleep(0.5)
+         else:
+            err = 0
+            break
+      else:
+         print ('Network issue')
+         err = 0
+   return imageDict
+
+
+def previewdltomenory(previewimg, mangasession):
+   imageDict = {}
+   if previewimg['imageForm']:
+      pass
+   else:
+      previewimg['imageForm'] = 'jpg'
+   if previewimg['imageurlSmall']:
+
+      imageDict = imageDownload(previewimg=previewimg,
+                                mangasession=mangasession
+                                )
+   else:
+      pass
+   return imageDict
+
+def previewDlToMemoryBig(previewimg, mangasession):
+   imageDict = {}
+   if previewimg['imageForm']:
+      pass
+   else:
+      previewimg['imageForm'] = 'jpg'
+   if previewimg['imageurlBig']:
+      imageDict = imageDownload(previewimg=previewimg,
+                                mangasession=mangasession,
+                                fromBig=True
+                               )
+   else:
+      pass
+   if imageDict:
+      pass
+   elif previewimg['imageurlSmall']:
+      imageDict = imageDownload(previewimg=previewimg,
+                                mangasession=mangasession
+                                )
+   else:
+      pass
    return imageDict
    
+      
    
 
