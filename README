@@ -9,7 +9,7 @@ MAJOR FEATURES
 2 It contains a step by step guide to help users to create their search profiles.
 3 The bot admin could control and alter both the bot's and the spider's process. Please read the
   config file to gain more information.
-4 It supports HTTP/HTTPS proxies which is useful for the territory restricting the access to telegram 
+4 It supports HTTP/HTTPS proxies which are useful for the territory restricting the access to telegram 
   and/or e-hentai. 
 
 ENVIRONMENT AND PYTHON VERSION
