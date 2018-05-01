@@ -79,7 +79,7 @@ class MangaSpider():
                      print ("Image missed")
                   print ("----------jptitle updated----------")
                   userInfoDict.update(tempdict)
-               elif generalcfg.noEngOnlyGallery == False:   # Say goodbye to all mind fucking English galleries.
+               elif generalcfg.noEngOnlyGallery == False or tempdict[url].get('land') == None:   # Say goodbye to all mind fucking English galleries.
                   if tempdict[url].get("entitle") != None:
                      outentitle = tempdict[url].get("entitle")[0]
                      strDict.update({outentitle: url})

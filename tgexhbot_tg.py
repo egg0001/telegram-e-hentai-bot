@@ -116,7 +116,10 @@ def error(bot, update, error):
    logger.warning('Update "%s" caused error "%s"', update, error)
 
 def main():
-   updater = Updater(token=generalcfg.token)
+   if generalcfg.proxy:
+      updater = Updater(token=generalcfg.token, request_kwargs={'proxy_url': generalcfg.proxy[0]})
+   else:   
+      updater = Updater(token=generalcfg.token)
    dp =updater.dispatcher
    job=updater.job_queue
    conv_handler = ConversationHandler(
