@@ -20,31 +20,31 @@ def urlgenerate(searchopt):  #put this function to the specify module later
 
 
 
-   if len(searchopt.artist) != 0:
+   if searchopt.artist:
       for a in searchopt.artist:
          SearchKey = SearchKey + "+artist:" + a
    
-   if len(searchopt.group) != 0:
+   if searchopt.group:
       for g in searchopt.group:
          SearchKey = SearchKey + "+group:" + g
    
-   if len(searchopt.parody) != 0:
+   if searchopt.parody:
       for p in searchopt.parody:
          SearchKey = SearchKey + "+parody:" + p
 
-   if len(searchopt.character) != 0:
+   if searchopt.character:
       for c in searchopt.character:
          SearchKey = SearchKey + "+character:" + c
    
-   if len(searchopt.male) != 0:
+   if searchopt.male:
       for m in searchopt.male:
          SearchKey = SearchKey + "+male:" + m
 
-   if len(searchopt.female) != 0:
+   if searchopt.female:
       for f in searchopt.female:
          SearchKey = SearchKey + "+female:" + f
       
-   if len(searchopt.misc) != 0:
+   if searchopt.misc:
       for mi in searchopt.misc:
          SearchKey = SearchKey + "+misc:" + mi
 
