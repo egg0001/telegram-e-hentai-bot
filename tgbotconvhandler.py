@@ -3,12 +3,10 @@ import json
 import logging
 from ast import literal_eval
 from tgbotmodules import userdatastore
-# from tgbotmodules import botconfig
 from tgbotmodules import replytext
 from tgbotmodules.spidermodules import generator # use the sleep function
 from tgbotmodules import exhspider
 from tgbotmodules import userdatastore
-# from tgbotmodules import botconfig
 from tgbotmodules.spidermodules import generalcfg
 from tgbotmodules import searchoptgen 
 from io import BytesIO 
@@ -512,7 +510,11 @@ def spiderfunction(logger):
       logger.info("Search of user %s has completed.", str(sd))
       if outDict:
          toTelegramDict.update({str(sd): outDict})
-   return toTelegramDict 
+      if outDict.get('cookiesDict'):
+         spiderDict[sd]["usercookies"] = outDict['cookiesDict']
+         cookiesUpdateDict = {sd: spiderDict[sd]}
+         userdatastore.datastore(userdict=cookiesUpdateDict, fromSpider=True)
+   return toTelegramDict
 
 
 def messageanalyze(inputStr=None, user_data=None, chat_data=None, logger=None):

@@ -39,24 +39,24 @@ def userfiledetect():
 
    return statusdict
 
-def datastore(userdict):
+def datastore(userdict, fromSpider=False):
 
    IOreportdict = {'issaved': False, 'nosamename': True,}
 
    with  open('./userdata/userdata', 'r') as fo:
       Usersdict = json.load(fo)
-      
-   for usd in Usersdict:
-      if usd == list(userdict.keys())[0]:
+   if fromSpider == False:
+      for usd in Usersdict:
+         if usd == list(userdict.keys())[0]:
          
-         IOreportdict['nosamename'] = False
-
+            IOreportdict['nosamename'] = False
+   else:
+      pass
    if IOreportdict['nosamename'] == True:  
       Usersdict.update(userdict)
       with  open('./userdata/userdata', 'w') as fo:
          json.dump(Usersdict, fo)
       IOreportdict['issaved'] = True
-         # IOreport = "Usersdata file was updated successfully."
    return IOreportdict
 
 def dataretrive(actusername):   #must use actual username
