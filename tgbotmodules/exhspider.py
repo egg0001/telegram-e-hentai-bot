@@ -30,8 +30,7 @@ class MangaSpider():
          
          r = mangasession.get(url)
          htmlcontent = r.text
-         urlsdict.update(datafilter.Grossdataspider(htmlcontent=htmlcontent, 
-                                                    searchopt=self.searchopt))
+         urlsdict.update(datafilter.Grossdataspider(htmlcontent=htmlcontent))
       #    print (urlsdict)
          print ("Now have a rest")
          generator.Sleep.Havearest(self.stop)
@@ -186,7 +185,6 @@ def Sessiongenfunc(searchopt, cookies):
             searchopt.eh = True
    else:
       searchopt.eh = True
-      requests.utils.add_dict_to_cookiejar(mangasession.cookies, {"sl": "dm_1"})
    return mangasession      
 
 def Spidercontrolasfunc(searchopt, cookies, path):
@@ -208,8 +206,7 @@ def Spidercontrolasfunc(searchopt, cookies, path):
                         path=path
                        )
    outDict = MangaSpider.mangaanalysis(manga2)
-
-
+   outDict.update({'cookiesDict': requests.utils.dict_from_cookiejar(mangasession.cookies)})
    del mangasession
    return outDict
 

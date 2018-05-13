@@ -13,73 +13,73 @@ def exhtest(htmlContent):
       usefulCookies = True
    return usefulCookies
    
-def Grossdataspider(htmlcontent, searchopt):
-   pattern1 = re.compile(r"id1")
-   matchs1 = pattern1.finditer(htmlcontent)
-   beginlist = []
-   pattern2 = re.compile(r"id44")
-   matchs2 = pattern2.finditer(htmlcontent)
-   endlist = []
-   searchcatedict = {"&f_doujinshi=1": searchopt.doujinshi,
-                     "&f_manga=1": searchopt.manga,
-                     "&f_artistcg=1": searchopt.artistcg,
-                     "&f_gamecg=1": searchopt.gamecg,
-                     "&f_western=1": searchopt.western,
-                     "&f_non-h=1": searchopt.non_h,
-                     "&f_cosplay=1": searchopt.cosplay,
-                     "&f_asianporn=1": searchopt.asianporn,
-                     "&f_misc=1": searchopt.cate_misc,
-                     "f_imageset=1": searchopt.imageset,
-                    }
-
-   pagefilteroff = searchopt.pagefilteroff
-   if searchopt.manga == True:
-      truecount = 0   # Count the amount of true values in the searchcatedict
-      for searchcate in searchcatedict.items():
-   
-         if searchcate[1] == True:
-            truecount += 1
-      if truecount >= 2:
-         pagefilteroff = True
+def Grossdataspider(htmlcontent):
+   patternThumb = re.compile(r"Show List")
+   matchThumb = patternThumb.search(htmlcontent)
+   if matchThumb:
+      urlsdict = GrossdataspiderThumbnail(htmlcontent=htmlcontent)
    else:
-      pagefilteroff = True
-
-
-
-   for match in matchs1:
-      beginlist.append(match.span()[1])
+      urlsdict = GrossdataspiderList(htmlcontent=htmlcontent)
+   return urlsdict
  
-   for match in matchs2:
-      endlist.append(match.span()[0])
-	 
-   loopcounter = 0
-   urlsdict = {}
-   while loopcounter < len(beginlist):
-      substr = htmlcontent[beginlist[loopcounter]: endlist[loopcounter]]
-      linkpattern = re.compile(r'''div class="id2"><a href="(https://.+\.org/g/\w+/\w+/)">(.+)</a></div><div class="id3" style=''')
-      matchs3 = linkpattern.search(substr)
-      filepattern = re.compile(r"(\d+) files")
-      matchs5 = filepattern.search(substr)
-      if pagefilteroff == False:
-         if any(lang in matchs3.group(2) for lang in generalcfg.langkeys):
+def GrossdataspiderList(htmlcontent):
+   patternBegin = re.compile(r"itdc")
+   matchesBegin = patternBegin.finditer(htmlcontent)
+   beginList = []
+   patternEnd = re.compile(r"itu")
+   matchesEnd = patternEnd.finditer(htmlcontent)
+   endList = []
+   for match in matchesBegin:
+      beginList.append(match.span()[1])
+
+   for match in matchesEnd:
+      endList.append(match.span()[0])
+
+   loopCounter = 0
+   urlsDict = {}
+   linkPattern = re.compile(r'''class="it5"><a href="(https://.+\.org/g/\w+/\w+/)" onmouseover="[a-zA-Z0-9_()]+" onmouseout="[a-zA-Z0-9_()]+">(.+)</a></div>''')
+   while loopCounter < len(beginList):
+      substr = htmlcontent[beginList[loopCounter]: endList[loopCounter]]
+      matchesLinkInfo = linkPattern.search(substr)
+      if matchesLinkInfo:
+         if any(lang in matchesLinkInfo.group(2) for lang in generalcfg.langkeys):
             pass
-         elif matchs3.group(2).find('Anthology') != -1:
-            if int(matchs5.group(1)) > 50:
-               urlsdict.update({matchs3.group(2): matchs3.group(1)})
-            else:
-               pass
-         else: 
-            if int(matchs5.group(1)) > 100 and int(matchs5.group(1)) < 280:
-               urlsdict.update({matchs3.group(2): matchs3.group(1)})
-            else:
-               pass
+         else:      
+            urlsDict.update({matchesLinkInfo.group(2): matchesLinkInfo.group(1)})
       else:
-         if any(lang in matchs3.group(2) for lang in generalcfg.langkeys):
+         pass
+      loopCounter += 1
+   return urlsDict
+
+
+def GrossdataspiderThumbnail(htmlcontent):
+   patternBegin = re.compile(r"id1")
+   matchesBegin = patternBegin.finditer(htmlcontent)
+   beginList = []
+   patternEnd = re.compile(r"id44")
+   matchesEnd = patternEnd.finditer(htmlcontent)
+   endList = []
+   for match in matchesBegin:
+      beginList.append(match.span()[1])
+ 
+   for match in matchesEnd:
+      endList.append(match.span()[0])
+	 
+   loopCounter = 0
+   urlsDict = {}
+   linkPattern = re.compile(r'''div class="id2"><a href="(https://.+\.org/g/\w+/\w+/)">(.+)</a></div><div class="id3" style=''')
+   while loopCounter < len(beginList):
+      substr = htmlcontent[beginList[loopCounter]: endList[loopCounter]]
+      matchesLinkInfo = linkPattern.search(substr)
+      if matchesLinkInfo:
+         if any(lang in matchesLinkInfo.group(2) for lang in generalcfg.langkeys):
             pass
          else:
-            urlsdict.update({matchs3.group(2): matchs3.group(1)})
-      loopcounter += 1
-   return urlsdict
+            urlsDict.update({matchesLinkInfo.group(2): matchesLinkInfo.group(1)})
+      else:
+         pass
+      loopCounter += 1
+   return urlsDict
    
    
    

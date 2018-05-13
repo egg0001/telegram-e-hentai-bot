@@ -54,41 +54,33 @@ ToUserCate = ("Now please input your search categories and use comma to separate
               "notice that an error category input would cause a empty search result"
              )
 
-#--------------------usercate section----------------------------------------
+#--------------------search cateoury section----------------------------------------
 
 ReturnToRange = 'Return to pervious step (enter range).'
 
 CateError = 'Oops, you have enter a wrong categories list, please check it and retry.'
 
-ToUserChenn = ("Now please input your own channel name(without @), " + 
-               "or channel ID (recommended)" +
-               "and this bot would automatically send " +
-               "the result to this chennal in every SIX hours" +
-               "If you only hope to send the result to bot ADMIN's channel, " +
-               "please type 'EMPTY'."
+ToUserResult = ("Please type the option number to choice a method receiving your search result "
+               "in every {0} hours. \n" +
+               "Typing '1' indicates you would receive your result in this chat. \n" +
+               "Typing '2' indicates you would receive your result in the channel of this bot's admin. \n" +
+               "Typing '3' indicates you would receive your result in both this chat and the channel of" +
+               "this bot's admin."
               )
 
-#--------------------userchenn section---------------------------------------
+#--------------------userresult section---------------------------------------
 
 ReturnToCate = 'Return to pervious step (enter search categories).'
-
-ToUserPubChenn = ("If you want to share your result to my public channel, please enter YES and " +
-                  "other inputs would be seen as NO; " +
-                  "notice that we would NOT exploit your real username to show them."
-                 )
-
-#--------------------userpubchenn section------------------------------------
-
-ReturnToUserChenn = 'Return to pervious step (enter user channel).'
 
 ToVirtualUsername = ("Lastly, please enter your virtual username. " + 
                      "This username would be exploited to show the result on the public chennal " +
                      "if you have allowed this on the pervious step. "
                     )
+ChoiceError = ("Oops, you have typed some strange things, please retry.")
 
-#--------------------userpubchenn section-------------------------------------
+#--------------------virtualusername section-------------------------------------
 
-ReturnToUserPubChenn = 'Return to pervious step (allow public chennal?).'
+ReturnToUserResult = 'Return to pervious step (how to send your result).'
 
 ToStoreInfo = ("You have entered all the necessary information, " +
                "let us show it to you. \n" +
@@ -135,7 +127,7 @@ ToAdvCreate = ('Exploiting advance creating mode indicates you would use ' +
                                         'This is the template. \n' +
                                         '''{
                                             "usercate": ["CATE1", "CATE2", "..."], 
-                                            "userchenn": "@USERCHENNAL", 
+                                            "resultToChat": True, 
                                             "userranges": RANGE(INT),
                                             "userkey": "USERKEY", 
                                             "userpubchenn": False,
@@ -184,6 +176,9 @@ UserCateCheckFail = ('Oops, it seems that you have entered some wrong search cat
 UserRangesValueError = ('Oops, it seems that you have entered a wrong userranges, ' +
                         '(should be int), please check it and enter again.'
                        )
+
+UserReceiveResultError = ('Oops, you should choice at least ONE method to receive your result, ' +
+                          'please try again.')
 
 RangeExcess = ('It seems that you have entered a search range more than, ' +
                 '5 pages, limit to 5 pages'

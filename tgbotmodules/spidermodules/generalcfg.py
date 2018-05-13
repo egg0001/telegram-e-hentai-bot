@@ -34,7 +34,7 @@ headers = [{"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (K
 # Bot admin do not need to alter this variable in ordinary situation.
 
 langkeys = ['gay', 'Gay', 'RUS', 'Indonesian', 'Osomatsu-san', 'English', 'Korean', 'korean', 'Thai', 'Spanish', 'Vietnamese', 'Russian', 'French', 'Italian', 'Portuguese', 'German'] 
-#This list contains ALL the UNWANTED keywords the bot admin wants to rule out on the titles in the index pages of e-hentai/exhentai.
+#This list contains ALL the UNWANTED keywords the bot admin wants to rule out based on the titles in the index pages of e-hentai/exhentai.
 #Since the history reason, it keeps to be called langkeys.
 
 
