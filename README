@@ -1,11 +1,28 @@
 TELEGRAM-E-HENTAI-BOT
 
-A python telegram bot tracking e-hentai/exhentai galleries and sending them to specified channel.
+A python telegram bot tracking e-hentai/exhentai galleries and sending them to user as well as bot 
+admin's channel (if user allowed).
 
+ATTENTION
+
+This version would not support the previous userdata structure. Although I have provided a script 
+(userdataconver.py) to help bot admin to convert it, re-input this userdata is recommended.
+
+WHAT'S NEW
+
+1 The bot could send the result to users' private chat with the bot rather than users' personal channel
+  since dealing with channel is annoying.
+2 The bot could now update every user's cookies after search.
+3 Now if the bot does not know where to send the users' result (leaking chat_id), it would not initiate 
+  search in the first place.  
+4 The search function now also supports e-hentai's list mode rather than relies on adding an extra 
+  variable in cookies and converting the search to thumbnail mode. 
+
+ 
 MAJOR FEATURES
-1 This bot would utilize user created profiles to search e-hentai or exhentai, then send the
-  result (including galleries' title, links and preview images(small or full image)) to users' personal 
-  channels and (if user allowed) bot admin's channel at a specified time cycle.
+1 This bot would utilize user created profiles to search e-hentai or exhentai, then send the result 
+  (including galleries' title, links and preview images(small or full image)) to users' chat and 
+  (if user allowed) bot admin's channel at a specified time cycle.
 2 It contains a step by step guide to help users to create their search profiles.
 3 The bot admin could control and alter both the bot's and the spider's process. Please read the
   config file to gain more information.
@@ -31,7 +48,7 @@ BASIC USAGE FOR BOT ADMIN
 1. Apply a bot at @BotFather on telegram. Then copy the token to token variable in 
    tgbotmodules/spidermodules/generalcfg.py.
 
-2. Create a private channel and add the bot created before as the admin. After that exploit some 
+2. Create a private channel and add the bot created before as the admin. Then exploit some 
    specified bots (like @getidsbot) to gain the channel ID. Once gained this ID, copy it to the 
    pubChannelID variable in tgbotmodules/spidermodules/generalcfg.py.
 

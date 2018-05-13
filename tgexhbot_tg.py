@@ -22,7 +22,9 @@ from tgbotmodules import userdatastore
 def start(bot, update, user_data, chat_data):
    user_data.clear()
    chat_data.clear()
-   user_data.update({"actualusername": str(update.message.from_user.username)})
+   user_data.update({"actualusername": str(update.message.from_user.username),
+                     "chat_id": update.message.chat_id}
+                   )
    logger.info("Actual username is %s.", str(update.message.from_user.username))
    update.message.reply_text(text="Welcome to Nakazawa Bookstore, please show your vip card.")
    chat_data.update({'state': 'verify'})
@@ -30,6 +32,7 @@ def start(bot, update, user_data, chat_data):
 
 def state(bot, update, user_data, chat_data):
    inputStr = update.message.text
+   user_data.update({'chat_id': update.message.chat_id})
    outputDict = messageanalyze(inputStr=inputStr, 
                                user_data=user_data, 
                                chat_data=chat_data,
@@ -41,37 +44,56 @@ def state(bot, update, user_data, chat_data):
       update.message.reply_text(text=text)
    if chat_data['state'] != 'END':
       state = STATE 
-   else: 
+   else:
+      print (user_data)
+      userdata = ({chat_data["virtualusername"]: user_data})
+      searcheh(bot=bot, user_data=userdata)
       user_data.clear()
-      chat_data.clear()
+      chat_data.clear() 
       logger.info("The user_data and chat_data of user %s is clear.", str(update.message.from_user.username))
       state = ConversationHandler.END
    return state
 
-def searcheh(bot, job):
+def searcheh(bot, job=None, user_data=None):
    logger.info("Search is beginning")
-   spiderDict = userdatastore.getspiderinfo()
-   toTelegramDict = spiderfunction(logger=logger)
-   logger.info("All users' search has been completed, begin to send the result")
+   if user_data:
+      for ud in user_data:
+         user_data[ud].update({'userpubchenn': False})
+         logger.info("User %s has finished profile setting process, test search is begining.", user_data[ud]['actualusername'])
+      spiderDict = user_data
+      toTelegramDict = spiderfunction(logger=logger, spiderDict=spiderDict)
+   else:
+      spiderDict = userdatastore.getspiderinfo()
+      toTelegramDict = spiderfunction(logger=logger)
+      logger.info("All users' search has been completed, begin to send the result")
    if toTelegramDict:
       for td in toTelegramDict:
          chat_idList = []     
-         if spiderDict[td]['userchenn']:
-            chat_idList.append(spiderDict[td]['userchenn'])
-         if spiderDict[td]["userpubchenn"] == True:
+         if spiderDict[td].get('chat_id') and spiderDict[td]['resultToChat'] == True:
+            chat_idList.append(spiderDict[td]['chat_id'])
+         if spiderDict[td]["userpubchenn"] == True and generalcfg.pubChannelID:      # Public channel id might be empty
             chat_idList.append(generalcfg.pubChannelID)
          logger.info("Begin to send user %s's result.", td)
          for chat_id in chat_idList:
             messageDict = {"messageCate": "message",
-                           "messageContent": ["------This is user {0}'s result------".format(str(td))]}
+                           "messageContent": ["------This is the result of {0}------".format(str(td))]}
             channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
-            for obj in toTelegramDict[td]['imageObjDict']:
-               messageDict = {'messageCate': "photo", "messageContent": [toTelegramDict[td]["imageObjDict"][obj]]}
+            if toTelegramDict[td].get('imageObjDict'):
+               for obj in toTelegramDict[td]['imageObjDict']:
+                  messageDict = {'messageCate': "photo", "messageContent": [toTelegramDict[td]["imageObjDict"][obj]]}
+                  channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
+                  messageDict = {'messageCate': "message", "messageContent": [obj]}
+                  channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
+            if toTelegramDict[td].get("strList"):
+               if toTelegramDict[td]["strList"]:
+                  messageDict = {'messageCate': "message", "messageContent": toTelegramDict[td]["strList"]}
+                  channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id) 
+               else:
+                  messageDict = {'messageCate': "message", "messageContent": ["We do not have any new result."]}
+                  channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
+            else:
+               messageDict = {'messageCate': "message", "messageContent": ["We do not have any new result."]}
                channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
-               messageDict = {'messageCate': "message", "messageContent": [obj]}
-               channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
-            messageDict = {'messageCate': "message", "messageContent": toTelegramDict[td]["strList"]}
-            channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id) 
          logger.info("User %s's result has been sent.", td)
       logger.info("All users' result has been sent.")
    else: 
@@ -120,8 +142,8 @@ def main():
       updater = Updater(token=generalcfg.token, request_kwargs={'proxy_url': generalcfg.proxy[0]})
    else:   
       updater = Updater(token=generalcfg.token)
-   dp =updater.dispatcher
-   job=updater.job_queue
+   dp = updater.dispatcher
+   job= updater.job_queue
    conv_handler = ConversationHandler(
                   entry_points=[CommandHandler('start', start, pass_user_data=True, pass_chat_data=True)],
                   states={STATE: [MessageHandler(Filters.text, state, pass_user_data=True, pass_chat_data=True)]
