@@ -6,6 +6,7 @@ import os
 import time
 import datetime
 from ast import literal_eval
+from threading import Lock
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler 
@@ -17,7 +18,7 @@ from tgbotmodules import replytext
 from tgbotmodules.spidermodules import generalcfg
 from tgbotmodules import userdatastore
 
- 
+
 def start(bot, update, user_data, chat_data):
    user_data.clear()
    chat_data.clear()
@@ -54,6 +55,8 @@ def state(bot, update, user_data, chat_data):
    return state
 
 def searcheh(bot, job=None, user_data=None):
+   tLock = Lock()
+   tLock.acquire()
    logger.info("Search is beginning")
    if user_data:
       for ud in user_data:
@@ -99,6 +102,7 @@ def searcheh(bot, job=None, user_data=None):
       logger.info("Could not gain any new result to users.")         
       messageDict = {"messageCate": "message", "messageContent": ["We do not have any new result"]}
       channelmessage(bot=bot, messageDict=messageDict, chat_id=generalcfg.pubChannelID)
+   tLock.release()
 
 def channelmessage(bot, messageDict, chat_id): 
    messageContent = messageDict["messageContent"]
