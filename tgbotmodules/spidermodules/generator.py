@@ -95,7 +95,7 @@ class Sleep():   #Just a sleep function
    minsleep = 0
    maxsleep = 0
    def __init__(self, sleepstr):
-      self.sleepstr = sleepstr
+      self.sleepstr = str(sleepstr)
       if self.sleepstr.find("-") != -1:
          sleeptime = self.sleepstr.split("-")
          Sleep.minsleep = int(sleeptime[0])
