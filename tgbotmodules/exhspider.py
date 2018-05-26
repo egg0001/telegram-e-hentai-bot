@@ -7,6 +7,8 @@ from tgbotmodules.spidermodules import datafilter
 from tgbotmodules.spidermodules import generator
 from tgbotmodules.spidermodules import ehlogin
 from tgbotmodules.spidermodules import download
+from threading import Thread
+from queue import Queue
 import re
 import argparse
 import json
@@ -44,6 +46,7 @@ class MangaSpider():
       strDict = {} #For generate information to the user
       userInfoDict = {} # Dump information to file
       imageObjDict = {} # Get the image objects 
+      q = Queue() # store the image memory objects
       download.userfiledetect(path=self.path)
       with open("{0}.mangalog".format(self.path), "r") as fo:
          mangaDict =  json.load(fo)
@@ -73,15 +76,35 @@ class MangaSpider():
                                          urls=usl,
                                          searchopt=self.searchopt))
       # print (tempList)
+      threadCounter = 0
       tempDict = datafilter.genmangainfoapi(resultJsonDict=tempList, searchopt=self.searchopt)
       for url in tempDict:
-         imageDict = previewImageDL(mangaUrl=url, 
-                                    mangaInfo=tempDict[url], 
-                                    mangasession=mangasession)
-                                    
-      #    print (imageDict)
-         tempDict[url].update({'imageDict': imageDict})
-      #    print (tempDict[url])
+         t = Thread(target=previewImageDL, 
+                    name=url, 
+                    kwargs={'mangaUrl': url, 
+                            'mangaInfo': tempDict[url], 
+                            'mangasession': mangasession,
+                            'q': q,
+                           }
+                   )
+         threadCounter += 1
+         t.start()
+         if threadCounter >= generalcfg.dlThreadLimit:
+            t.join()
+            threadCounter = 0
+      t.join()
+      # print ("DL has completed.")
+      imageTempDict = {}
+      while not q.empty():
+         temp = q.get()
+         imageTempDict.update(temp)
+      # print (imageTempDict)
+      for url in tempDict:
+         if imageTempDict.get(url):
+            tempDict[url].update({'imageDict': imageTempDict[url]})
+         else:
+            tempDict[url].update({'imageDict': {}})
+
       if tempDict:
          for url in tempDict:
             if tempDict[url]:
@@ -150,7 +173,8 @@ class MangaSpider():
          json.dump(mangaDict, fo)
       return outDict
 
-def previewImageDL(mangaUrl, mangaInfo, mangasession):
+def previewImageDL(mangaUrl, mangaInfo, mangasession, q):
+#    print ('{0} image DL has started.'.format(mangaUrl))
    if mangaInfo["jptitle"]:
       title = mangaInfo["jptitle"][0]
    elif mangaInfo["entitle"]:
@@ -174,7 +198,8 @@ def previewImageDL(mangaUrl, mangaInfo, mangasession):
       imageDict = download.previewDlToMemoryBig(previewimg=previewimg, mangasession=mangasession)
    else:
       imageDict = download.previewdltomenory(previewimg=previewimg, mangasession=mangasession)
-   return imageDict
+   imageDict = {mangaUrl: imageDict}
+   q.put(imageDict)
 
    
       

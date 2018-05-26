@@ -217,6 +217,10 @@ def genmangainfoapi(resultJsonDict, searchopt):
                       }})
    print (mangaInfo)
    for mi in mangaInfo:
+      if any(lang in mangaInfo[mi]['lang'] for lang in generalcfg.langkeys):
+         langKeep = False
+      else:
+         langKeep = True
       keepTag = tagfilter(female_tags=mangaInfo[mi]['female'],
                           male_tags=mangaInfo[mi]['male'],
                           misc_tags=mangaInfo[mi]['misc']
@@ -233,7 +237,7 @@ def genmangainfoapi(resultJsonDict, searchopt):
       else:
          isMatchGroup = True
 
-      if keepTag == True and isMatchArtist == True and isMatchGroup == True:
+      if keepTag == True and isMatchArtist == True and isMatchGroup == True and langKeep == True:
          resultDict.update({mi: mangaInfo[mi]})
    print (resultDict)
    return resultDict

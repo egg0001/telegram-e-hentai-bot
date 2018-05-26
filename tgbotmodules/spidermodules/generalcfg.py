@@ -51,6 +51,10 @@ dlFullPreviewImage = True # This variable would determin whether the bot downloa
 
 dlRetry = 3  # This variable determins the retry times while downloading preview images.
 
+dlThreadLimit = 2  # This variable determins the maximum thread amount while downloading preview images.
+                   # While exploiting too many threads to DL images, e-h would ban the ip.
+                   # If efficiency is not a major concern, please set this variable to 1.
+
 unwantedfemale = ['ssbbw']
 unwantedmale = ['males_only', 'yaoi'] 
 unwantedmisc = []
