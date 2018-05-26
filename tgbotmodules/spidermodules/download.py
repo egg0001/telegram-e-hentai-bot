@@ -10,6 +10,7 @@ import io
 import re
 import random
 from . import generalcfg
+from . import generator
 
 
 
@@ -40,18 +41,84 @@ def userfiledetect(path):
          else:
             pass
       
-def Previewdl(url, mangasession, filename, path):
+
+def previewImageDL(mangaUrl, mangaInfo, mangasession, q):
+#    print ('{0} image DL has started.'.format(mangaUrl))
+   if mangaInfo["jptitle"]:
+      title = mangaInfo["jptitle"][0]
+   elif mangaInfo["entitle"]:
+      title = mangaInfo["entitle"]
+   else:
+      title = ""
+   previewimg = {'imageurlSmall': mangaInfo["imageurlSmall"], 
+                 'imageForm': mangaInfo["imageForm"], 
+                 'title': title,
+                 'imageurlBig': ''}
+   if generalcfg.dlFullPreviewImage == True:
+      imagePatternBig = re.compile(r'''href="(https://[a-z-]+\.org/[a-z0-9]/[a-z0-9]+/[a-z0-9]+\-1)"''')
+      tdHtmlContent = accesstoehentai(method='get',
+                                      mangasession=mangasession,
+                                      stop=generator.Sleep(2),
+                                      urls=[mangaUrl])
+      
+      imageMatchBig = imagePatternBig.search(tdHtmlContent[0])
+      if imageMatchBig:
+         previewimg.update({'imageurlBig': imageMatchBig.group(1)})
+      imageDict = previewDlToMemoryBig(previewimg=previewimg, mangasession=mangasession)
+   else:
+      imageDict = previewdltomenory(previewimg=previewimg, mangasession=mangasession)
+   imageDict = {mangaUrl: imageDict}
+   q.put(imageDict)
+
+   
+      
 
 
-   os.makedirs(path, exist_ok=True)
-   previewimage = mangasession.get(url, stream=True)
-   handle = open("{0}{1}".format(path, filename), 'wb')
-#    handle = open("./previewimage/FILENAME".replace('FILENAME', filename), "wb")
-   for chunk in previewimage.iter_content(chunk_size=512):
-      if chunk:
-         handle.write(chunk)
-   handle.close()
-   return
+def accesstoehentai(method, mangasession, stop, urls=None, searchopt=None):
+#    print (urls)
+   resultList = []
+   if method == 'get':
+      inputInfo = urls
+   elif method == 'post':
+      tokenPattern = re.compile(r'''https://.+\.org/g/([0-9a-z]+)\/([0-9a-z]+)\/''')
+      mangaJsonPayload = {
+                          "method": "gdata",
+                          "gidlist": [],
+                          "namespace": 1
+                         }
+      for url in urls:
+         mangaTokenMatch = tokenPattern.search(url)
+         mangaJsonPayload["gidlist"].append([mangaTokenMatch.group(1), mangaTokenMatch.group(2)])
+
+      inputInfo = [mangaJsonPayload]
+   else:
+      inputInfo = ''
+   for ii in inputInfo:
+      err = 0
+      for err in range(generalcfg.timeoutRetry):
+         try:
+            if method == 'get':
+               r = mangasession.get(ii)
+               resultList.append(r.text)
+            else:
+               if searchopt.eh == True:
+                  r = mangasession.post('https://api.e-hentai.org/api.php', json=ii)
+               else:
+                  r = mangasession.post('https://api.exhentai.org/api.php', json=ii)
+               mangaDictMeta = r.json()
+               resultList.extend(mangaDictMeta['gmetadata'])
+         except:
+            err += 1
+            generator.Sleep.Havearest(stop)
+         else:
+            generator.Sleep.Havearest(stop)
+            err = 0
+            break
+      else:
+         print ("network issue")
+         err = 0
+   return resultList
+
 
 def imageDownload(mangasession, previewimg, fromBig=False):
    err = 0

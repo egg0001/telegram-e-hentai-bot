@@ -26,7 +26,7 @@ class MangaSpider():
       mangasession = self.mangasession
       stop = generator.Sleep(sleepstr=self.searchopt.rest)
       urlsdict = {}
-      tempList = accesstoehentai(method='get', 
+      tempList = download.accesstoehentai(method='get', 
                                  mangasession=self.mangasession,
                                  stop=stop,
                                  urls=self.urls)
@@ -39,7 +39,7 @@ class MangaSpider():
    def mangaanalysis(self):
       mangasession = self.mangasession
       urlSeparateList = [] # separate urls (list) to sublist containing 24 urls in each element
-      tempList = []
+      tempList = [] # store the API result from e-h/exh
       tempDict = {} # transfer internal data
       outDict = {}# return the information
       strList = [] # contain the message strs.
@@ -70,16 +70,18 @@ class MangaSpider():
          urlSeparateList.append(subUrlList)
       apiStop = generator.Sleep('2-3')
       for usl in urlSeparateList:
-         tempList.extend(accesstoehentai(method='post', 
-                                         mangasession=mangasession,
-                                         stop=apiStop,
-                                         urls=usl,
-                                         searchopt=self.searchopt))
+         tempList.extend(download.accesstoehentai(method='post', 
+                                                  mangasession=mangasession,
+                                                  stop=apiStop,
+                                                  urls=usl,
+                                                  searchopt=self.searchopt
+                                                 )
+                        )
       # print (tempList)
-      threadCounter = 0
       tempDict = datafilter.genmangainfoapi(resultJsonDict=tempList, searchopt=self.searchopt)
+      threadCounter = 0 # Counter for the multi-threading
       for url in tempDict:
-         t = Thread(target=previewImageDL, 
+         t = Thread(target=download.previewImageDL, 
                     name=url, 
                     kwargs={'mangaUrl': url, 
                             'mangaInfo': tempDict[url], 
@@ -94,7 +96,7 @@ class MangaSpider():
             threadCounter = 0
       t.join()
       # print ("DL has completed.")
-      imageTempDict = {}
+      imageTempDict = {}  # Temporally store the image objs
       while not q.empty():
          temp = q.get()
          imageTempDict.update(temp)
@@ -173,83 +175,7 @@ class MangaSpider():
          json.dump(mangaDict, fo)
       return outDict
 
-def previewImageDL(mangaUrl, mangaInfo, mangasession, q):
-#    print ('{0} image DL has started.'.format(mangaUrl))
-   if mangaInfo["jptitle"]:
-      title = mangaInfo["jptitle"][0]
-   elif mangaInfo["entitle"]:
-      title = mangaInfo["entitle"]
-   else:
-      title = ""
-   previewimg = {'imageurlSmall': mangaInfo["imageurlSmall"], 
-                 'imageForm': mangaInfo["imageForm"], 
-                 'title': title,
-                 'imageurlBig': ''}
-   if generalcfg.dlFullPreviewImage == True:
-      imagePatternBig = re.compile(r'''href="(https://[a-z-]+\.org/[a-z0-9]/[a-z0-9]+/[a-z0-9]+\-1)"''')
-      tdHtmlContent = accesstoehentai(method='get',
-                                      mangasession=mangasession,
-                                      stop=generator.Sleep(2),
-                                      urls=[mangaUrl])
-      
-      imageMatchBig = imagePatternBig.search(tdHtmlContent[0])
-      if imageMatchBig:
-         previewimg.update({'imageurlBig': imageMatchBig.group(1)})
-      imageDict = download.previewDlToMemoryBig(previewimg=previewimg, mangasession=mangasession)
-   else:
-      imageDict = download.previewdltomenory(previewimg=previewimg, mangasession=mangasession)
-   imageDict = {mangaUrl: imageDict}
-   q.put(imageDict)
 
-   
-      
-
-
-def accesstoehentai(method, mangasession, stop, urls=None, searchopt=None):
-#    print (urls)
-   resultList = []
-   if method == 'get':
-      inputInfo = urls
-   elif method == 'post':
-      tokenPattern = re.compile(r'''https://.+\.org/g/([0-9a-z]+)\/([0-9a-z]+)\/''')
-      mangaJsonPayload = {
-                          "method": "gdata",
-                          "gidlist": [],
-                          "namespace": 1
-                         }
-      for url in urls:
-         mangaTokenMatch = tokenPattern.search(url)
-         mangaJsonPayload["gidlist"].append([mangaTokenMatch.group(1), mangaTokenMatch.group(2)])
-
-      inputInfo = [mangaJsonPayload]
-   else:
-      inputInfo = ''
-   for ii in inputInfo:
-      err = 0
-      for err in range(generalcfg.timeoutRetry):
-         try:
-            if method == 'get':
-               r = mangasession.get(ii)
-               resultList.append(r.text)
-            else:
-               if searchopt.eh == True:
-                  r = mangasession.post('https://api.e-hentai.org/api.php', json=ii)
-               else:
-                  r = mangasession.post('https://api.exhentai.org/api.php', json=ii)
-               mangaDictMeta = r.json()
-               resultList.extend(mangaDictMeta['gmetadata'])
-         except:
-            err += 1
-            generator.Sleep.Havearest(stop)
-         else:
-            generator.Sleep.Havearest(stop)
-            err = 0
-            break
-      else:
-         print ("network issue")
-         err = 0
-   return resultList
-   
 
 def exhcookiestest(mangasessionTest, cookies, forceCookiesEH=False):   #Evaluate whether the cookies could access exh
    requests.utils.add_dict_to_cookiejar(mangasessionTest.cookies, cookies)
