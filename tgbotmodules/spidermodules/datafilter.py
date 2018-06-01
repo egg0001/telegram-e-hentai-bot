@@ -134,7 +134,117 @@ def artistmatch(artist, artistkeys):  #should rewrite to support multiple groups
       ismatch = True
    return ismatch
    
-   
+
+
+def genmangainfoapi(resultJsonDict, searchopt):
+   mangaInfo = {}
+   resultDict = {}
+   for gmd in resultJsonDict:
+      male_tags = []
+      female_tags = []
+      artist = []
+      group = []
+      character = []
+      parody = []
+      misc_tags = []
+      lang = []
+      entitle = []
+      jptitle = []
+      length = []
+      category = []
+      imageurlSmall = ""
+      imageForm = ""
+      if searchopt.eh == True:
+         galleryUrl = 'https://e-hentai.org/g/{0}/{1}/'.format(gmd['gid'], gmd['token'])
+      else:
+         galleryUrl = 'https://exhentai.org/g/{0}/{1}/'.format(gmd['gid'], gmd['token'])
+      if gmd.get('title'):
+         entitle.append(gmd['title'])
+      if gmd.get('title_jpn'):
+         jptitle.append(gmd['title_jpn'])
+      if gmd.get('filecount'):
+         length.append(gmd['filecount'])
+      if gmd.get('category'):
+         category.append(gmd['category'])
+      if gmd.get('thumb'):
+         imageurlSmall = gmd['thumb']
+         print (imageurlSmall)
+         imageMatch = re.search(r'''(https://[a-z0-9\.]+\.org\/[a-z0-9]+\/[a-z0-9]+\/[a-z0-9_-]+)\.(\w{3,4})''', imageurlSmall)
+         imageForm = imageMatch.group(2)
+      if gmd.get('tags'):
+         for tag in gmd['tags']:
+            parodyMatch = re.search(r'''parody:(.+)''', tag)
+            femaleMatch = re.search(r'''female:(.+)''', tag)
+            maleMatch = re.search(r'''male:(.+)''', tag)
+            artistMatch = re.search(r'''artist:(.+)''', tag)
+            groupMatch = re.search(r'''group:(.+)''', tag)
+            characterMatch = re.search(r'''character:(.+)''', tag)
+            languageMatch = re.search(r'''language:(.+)''', tag)
+            if parodyMatch:
+               parody.append(parodyMatch.group(1))
+            elif femaleMatch:
+               female_tags.append(femaleMatch.group(1))
+            elif maleMatch:
+               male_tags.append(maleMatch.group(1))
+            elif artistMatch:
+               artist.append(artistMatch.group(1))
+            elif groupMatch:
+               group.append(groupMatch.group(1))
+            elif characterMatch:
+               character.append(characterMatch.group(1))
+            elif languageMatch:
+               lang.append(languageMatch.group(1))
+            else:
+               misc_tags.append(tag)
+      if lang:
+         pass
+      else:
+         lang.append('Japanese')
+      mangaInfo.update({galleryUrl:
+                      {"entitle": entitle, 
+                       "jptitle": jptitle, 
+                       "artist": artist, 
+                       "lang": lang, 
+                       "length": length,
+                       "female": female_tags,
+                       "male": male_tags,
+                       "misc":  misc_tags,
+                       "group": group,
+                       "parody": parody,
+                       "character": character,
+                       "imageurlSmall": imageurlSmall,
+                       "imageForm": imageForm
+                      }})
+   print (mangaInfo)
+   for mi in mangaInfo:
+      if any(lang in mangaInfo[mi]['lang'] for lang in generalcfg.langkeys):
+         langKeep = False
+      else:
+         langKeep = True
+      keepTag = tagfilter(female_tags=mangaInfo[mi]['female'],
+                          male_tags=mangaInfo[mi]['male'],
+                          misc_tags=mangaInfo[mi]['misc']
+                        )
+      if searchopt.artist:
+         isMatchArtist = artistmatch(artist=mangaInfo[mi]['artist'], 
+                                     artistkeys=searchopt.artist)
+      else:
+         isMatchArtist = True
+
+      if searchopt.group:
+         isMatchGroup = artistmatch(artist=mangaInfo[mi]['group'], 
+                                    artistkeys=searchopt.artist)
+      else:
+         isMatchGroup = True
+
+      if keepTag == True and isMatchArtist == True and isMatchGroup == True and langKeep == True:
+         resultDict.update({mi: mangaInfo[mi]})
+   print (resultDict)
+   return resultDict
+
+
+     
+
 def genmangainfo(htmlcontent, url, searchopt, mangasession, path):   
    url = url
    entitlepattern = re.compile(r'''div id="gd2"><h1 id="gn">(.+)</h1><h1 id="gj">''')
