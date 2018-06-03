@@ -101,10 +101,10 @@ def accesstoehentai(method, mangasession, stop, urls=None, searchopt=None):
                r = mangasession.get(ii)
                resultList.append(r.text)
             else:
-               if searchopt.eh == True:
-                  r = mangasession.post('https://api.e-hentai.org/api.php', json=ii)
-               else:
-                  r = mangasession.post('https://api.exhentai.org/api.php', json=ii)
+            #    if searchopt.eh == True:
+               r = mangasession.post('https://api.e-hentai.org/api.php', json=ii)
+            #    else:
+            #       r = mangasession.post('https://api.exhentai.org/api.php', json=ii)
                mangaDictMeta = r.json()
                resultList.extend(mangaDictMeta['gmetadata'])
          except:
@@ -138,9 +138,20 @@ def imageDownload(mangasession, previewimg, fromBig=False):
             # print (r)
             htmlcontent = r.text
             # print (htmlcontent)
-            imagepattern = re.compile(r'''src=\"(http://[0-9:\.]+\/[a-zA-Z0-9]\/[a-zA-Z0-9-]+\/keystamp=[a-zA-Z0-9-]+;fileindex=[a-zA-Z0-9]+;xres=[a-zA-Z0-9]+\/.+\.[a-zA-Z]+)" style=''')
+            # imagepattern = re.compile(r'''src=\"(http://[0-9:\.]+\/[a-zA-Z0-9]\/[a-zA-Z0-9-]+\/keystamp=[a-zA-Z0-9-]+;fileindex=[a-zA-Z0-9]+;xres=[a-zA-Z0-9]+\/.+\.[a-zA-Z]+)" style=''')
+            # matchUrls = imagepattern.search(htmlcontent)
+            # previewimgUrl = matchUrls.group(1)
+            imagepattern = re.compile(r'''src=\"(http://[0-9:\.]+\/[a-zA-Z0-9]\/[a-zA-Z0-9-]+\/keystamp=[a-zA-Z0-9-]+;fileindex=[a-zA-Z0-9]+;xres=[a-zA-Z0-9]+\/.+\.([a-zA-Z]+))" style=''')
             matchUrls = imagepattern.search(htmlcontent)
-            previewimgUrl = matchUrls.group(1)
+            imagepatternAlter = re.compile(r'''\"(http://[0-9:\.]+\/[a-zA-Z0-9]\/[a-zA-Z0-9-]+\/keystamp=[a-zA-Z0-9-]+[;fileindex=]?[a-zA-Z0-9]?[;xres=]?[a-zA-Z0-9]?\/.+\.[a-zA-Z]+)\"''')
+            matchUrlsAlter = imagepatternAlter.search(htmlcontent)
+            if matchUrls:
+               imageUrl = matchUrls.group(1)
+               imageForm = matchUrls.group(2)
+            else:
+               imageUrl = matchUrlsAlter.group(1)
+               imageForm = matchUrlsAlter.group(2)
+
             # print (previewimgUrl)
          except:
             print ('Access error.')
