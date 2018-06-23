@@ -72,8 +72,8 @@ def usercookies(inputStr, user_data, chat_data, logger):
                  "outputChat_data": chat_data, 
                  "outputUser_data": user_data
                 }
-   print (user_data)
-   print (chat_data)
+#    print (user_data)
+#    print (chat_data)
    return outputDict
 
 def userkey(inputStr, user_data, chat_data, logger):
@@ -97,8 +97,8 @@ def userkey(inputStr, user_data, chat_data, logger):
                  "outputChat_data": chat_data, 
                  "outputUser_data": user_data
                 }
-   print (user_data)
-   print (chat_data)
+#    print (user_data)
+#    print (chat_data)
    return outputDict
 
 def userranges(inputStr, user_data, chat_data, logger):
@@ -128,8 +128,8 @@ def userranges(inputStr, user_data, chat_data, logger):
                  "outputChat_data": chat_data, 
                  "outputUser_data": user_data
                 }
-   print (user_data)
-   print (chat_data)
+#    print (user_data)
+#    print (chat_data)
    return outputDict
 
 def usercate(inputStr, user_data, chat_data, logger):
@@ -156,8 +156,8 @@ def usercate(inputStr, user_data, chat_data, logger):
                  "outputChat_data": chat_data, 
                  "outputUser_data": user_data
                 }
-   print (user_data)
-   print (chat_data)
+#    print (user_data)
+#    print (chat_data)
    return outputDict  
 
 def userresult(inputStr, user_data, chat_data, logger):
@@ -192,8 +192,8 @@ def userresult(inputStr, user_data, chat_data, logger):
                  "outputChat_data": chat_data, 
                  "outputUser_data": user_data
                 }
-   print (user_data)
-   print (chat_data)
+#    print (user_data)
+#    print (chat_data)
    return outputDict     
 
 def username(inputStr, user_data, chat_data, logger):
@@ -215,8 +215,8 @@ def username(inputStr, user_data, chat_data, logger):
                  "outputChat_data": chat_data, 
                  "outputUser_data": user_data
                 }
-   print (user_data)
-   print (chat_data)
+#    print (user_data)
+#    print (chat_data)
    return outputDict     
 
 def storeinfo(inputStr, user_data, chat_data, logger):
@@ -267,8 +267,8 @@ def storeinfo(inputStr, user_data, chat_data, logger):
                  "outputChat_data": chat_data, 
                  "outputUser_data": user_data
                 }
-   print (user_data)
-   print (chat_data)
+#    print (user_data)
+#    print (chat_data)
    return outputDict
 
 def advance(inputStr, user_data, chat_data, logger):
@@ -301,8 +301,8 @@ def advance(inputStr, user_data, chat_data, logger):
                  "outputChat_data": chat_data, 
                  "outputUser_data": user_data
                 }
-   print (user_data)
-   print (chat_data)
+#    print (user_data)
+#    print (chat_data)
    return outputDict    
 
 def advguide(inputStr, user_data, chat_data, logger):
@@ -356,8 +356,8 @@ def advguide(inputStr, user_data, chat_data, logger):
                  "outputChat_data": chat_data, 
                  "outputUser_data": user_data
                 }
-   print (user_data)
-   print (chat_data)
+#    print (user_data)
+#    print (chat_data)
    return outputDict
 
 def advcreate(inputStr, user_data, chat_data, logger):
@@ -419,8 +419,8 @@ def advcreate(inputStr, user_data, chat_data, logger):
                  "outputChat_data": chat_data, 
                  "outputUser_data": user_data
                 }
-   print (user_data)
-   print (chat_data)
+#    print (user_data)
+#    print (chat_data)
    return outputDict
 
 def advedit(inputStr, user_data, chat_data, logger):
@@ -447,8 +447,8 @@ def advedit(inputStr, user_data, chat_data, logger):
                  "outputChat_data": chat_data, 
                  "outputUser_data": user_data
                 }
-   print (user_data)
-   print (chat_data)
+#    print (user_data)
+#    print (chat_data)
    return outputDict      
 
 def delete(inputStr, user_data, chat_data, logger):
@@ -475,20 +475,27 @@ def delete(inputStr, user_data, chat_data, logger):
                  "outputChat_data": chat_data, 
                  "outputUser_data": user_data
                 }
-   print (user_data)
-   print (chat_data)
+#    print (user_data)
+#    print (chat_data)
    return outputDict  
 
 def spiderfunction(logger, spiderDict=None):
    if spiderDict == None:
       spiderDict = userdatastore.getspiderinfo()
+   else: 
+      # print (spiderDict)
+      for sD in spiderDict:
+         spiderDict[sD].update({'userpubchenn': False, 'resultToChat': True})
    logger.info("Spider is initialing")
+
    toTelegramDict = {} 
    sendUserResultDict = {} # Determin whether this user has chat_id and channel id to receive the result.
                            # Otherwise the spider would not search this user's information.
    sleep = generator.Sleep(sleepstr=generalcfg.searchInterval)
+
    for sd in spiderDict:
       tempChat_idList = []
+      # print (spiderDict[sd]['resultToChat'])
       if spiderDict[sd]['resultToChat'] == True and spiderDict[sd]['chat_id']:
          tempChat_idList.append(spiderDict[sd]['chat_id'])
       if spiderDict[sd]["userpubchenn"] == True and generalcfg.pubChannelID:
@@ -503,8 +510,9 @@ def spiderfunction(logger, spiderDict=None):
          userResultStorePath = "./searchresult/{0}/{1}/".format(spiderDict[sd]["actualusername"], sd)
          outDict =exhspider.Spidercontrolasfunc(searchopt=searchopt, 
                                                 cookies=cookies, 
-                                                path=userResultStorePath
-                                               )
+                                                path=userResultStorePath,
+                                                logger=logger
+                                               ) 
          logger.info("Search of user %s has completed.", str(sd))
          if outDict:
             toTelegramDict.update({str(sd): outDict})
