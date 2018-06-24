@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
+
 
 import requests
 from tgbotmodules.spidermodules import generalcfg
@@ -238,9 +238,14 @@ def Sessiongenfunc(searchopt, cookies, logger):
    else:
       mangasession.headers.update({{"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36",}})
    if generalcfg.proxy:
-      proxypattern = re.compile(r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:\d{1,5})")
-      proxy = proxypattern.search(random.choice(generalcfg.proxy)).group(1)
+      # proxypattern = re.compile(r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:\d{1,5})")
+      # proxy = proxypattern.search(random.choice(generalcfg.proxy)).group(1)
+      if generalcfg.proxy[0].find('socks5://') != -1:
+         proxy = generalcfg.proxy[0].replace('socks5://', 'socks5h://')
+      else:
+         proxy = generalcfg.proxy[0]
       proxies = {"http": proxy, "https": proxy,}
+      # print (proxies)
       mangasession.proxies = proxies
    else:
       pass

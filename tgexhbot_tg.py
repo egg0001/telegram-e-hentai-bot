@@ -63,7 +63,7 @@ def state(bot, update, user_data, chat_data):
       state = ConversationHandler.END
    return state
 
-def searchIntervalCTL(bot, job, ThreadQ, user_data=None):
+def searchIntervalCTL(bot, job, user_data=None):
     threadName = time.asctime()
     t = Thread(target=searcheh, 
                name=threadName, 
@@ -153,7 +153,7 @@ def thread_containor(threadQ):
    threadCounter = 0
    while True:
       t = threadQ.get()
-      logger('Added a new thread to thread containor - {0} '.format(t.name))
+      logger.info('Added a new thread to thread containor - {0} '.format(t.name))
       t.start()
       threadCounter += 1
       if threadCounter == 1:  # This condition limit the amount of threads running simultaneously.
@@ -161,7 +161,7 @@ def thread_containor(threadQ):
          threadCounter = 0
 
 def autoCreateJob(job):
-   job.run_repeating(searcheh, interval=generalcfg.interval, first=5)
+   job.run_repeating(searchIntervalCTL, interval=generalcfg.interval, first=5)
 
 def cancel(bot, update, user_data, chat_data):  
    update.message.reply_text(text=replytext.UserCancel)
