@@ -105,10 +105,10 @@ def accesstoehentai(method, mangasession, stop, logger, urls=None, searchopt=Non
                r = mangasession.get(ii)
                resultList.append(r.text)
             else:
-               if searchopt.eh == True:
-                  r = mangasession.post('https://api.e-hentai.org/api.php', json=ii)
-               else:
-                  r = mangasession.post('https://api.exhentai.org/api.php', json=ii)
+            #    if searchopt.eh == True:
+               r = mangasession.post('https://api.e-hentai.org/api.php', json=ii)
+            #    else:
+            #       r = mangasession.post('https://api.exhentai.org/api.php', json=ii)
                mangaDictMeta = r.json()
                resultList.extend(mangaDictMeta['gmetadata'])
          except Exception as error:

@@ -7,10 +7,11 @@ from . import download
 
 
 def exhtest(htmlContent):
-   pattern = re.compile(r"id1")
+   pattern = re.compile(r"Front Page")
    usefulCookies = False
-   if re.match(pattern, htmlContent):
+   if bool(re.search(pattern, htmlContent)):
       usefulCookies = True
+   print (usefulCookies)
    return usefulCookies
    
 def Grossdataspider(htmlcontent):

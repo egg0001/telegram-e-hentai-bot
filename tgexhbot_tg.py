@@ -16,11 +16,8 @@ from telegram.ext import ConversationHandler
 from tgbotconvhandler import messageanalyze
 from tgbotconvhandler import spiderfunction
 from tgbotmodules import replytext 
-# from tgbotmodules import botconfig
 from tgbotmodules.spidermodules import generalcfg
 from tgbotmodules import userdatastore
-
-# from tgbotmodules import userdatastore
  
 def start(bot, update, user_data, chat_data):
    user_data.clear()
