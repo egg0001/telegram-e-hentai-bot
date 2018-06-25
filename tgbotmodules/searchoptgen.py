@@ -41,13 +41,13 @@ def searchparser():
 
 def searchgenerate(generateDict):    
    searchopt = searchparser()
-   print (generateDict)
+#    print (generateDict)
    if generateDict['userkey']:
       searchopt.keyword = generateDict['userkey']
    if 'non-h' in generateDict['usercate']:
       generateDict['usercate'].remove('non-h')
       generateDict['usercate'].append('non_h')
-   print (generateDict['usercate'])
+#    print (generateDict['usercate'])
    for gd in generateDict['usercate']:
       searchopt.__setattr__(gd, True)
    searchopt.pages = generateDict["userranges"]

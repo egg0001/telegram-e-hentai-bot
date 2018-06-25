@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
+
 
 import requests
 from tgbotmodules.spidermodules import generalcfg
@@ -16,26 +16,28 @@ import random
 import time
 
 class MangaSpider():
-   def __init__(self, urls, mangasession, searchopt, path=None):
+   def __init__(self, urls, mangasession, searchopt, logger, path=None):
       self.urls=urls #list
       self.mangasession = mangasession #obj
       self.searchopt = searchopt
       self.path = path
+      self.logger = logger
    
    def pagedownload(self):
       mangasession = self.mangasession
       stop = generator.Sleep(sleepstr=self.searchopt.rest)
       urlsdict = {}
       tempList = download.accesstoehentai(method='get', 
-                                 mangasession=self.mangasession,
-                                 stop=stop,
-                                 urls=self.urls)
+                                          mangasession=self.mangasession,
+                                          stop=stop,
+                                          urls=self.urls,
+                                          logger=self.logger)
       if tempList:
          for tl in tempList:
             urlsdict.update(datafilter.Grossdataspider(htmlcontent=tl))
-      # print (urlsdict)
+      self.logger.info("Retrived {0} gallery(s) urls".format(len(urlsdict)))
       return urlsdict
-      
+    
    def mangaanalysis(self):
       mangasession = self.mangasession
       urlSeparateList = [] # separate urls (list) to sublist containing 24 urls in each element
@@ -47,17 +49,27 @@ class MangaSpider():
       userInfoDict = {} # Dump information to file
       imageObjDict = {} # Get the image objects 
       q = Queue() # store the image memory objects
+      threadQ = Queue()
+      tc = Thread(target=thread_containor, 
+                  name='tc', 
+                  kwargs={'threadQ': threadQ},
+                  daemon=True)
+      tc.start()
+      self.logger.info('Thread containor for downloading preview image initiated.')
       download.userfiledetect(path=self.path)
       with open("{0}.mangalog".format(self.path), "r") as fo:
          mangaDict =  json.load(fo)
+      discardUrls = 0
       for url in mangaDict:   # Rule out the redundant gerally
       #    print (url)
          try:
             self.urls.remove(url)
+            discardUrls += 1
          except ValueError:
-            pass
-         else:
-            print ("{0} is redundant, discard.".format(url))
+            continue
+      #    else:
+      #       print ("{0} is redundant, discard.".format(url))
+      self.logger.info('Discarded {0} redundant gallery(s)'.format(discardUrls))
       subUrlList = []
       internalCounter = 0
       for url in self.urls:
@@ -74,46 +86,53 @@ class MangaSpider():
                                                   mangasession=mangasession,
                                                   stop=apiStop,
                                                   urls=usl,
-                                                  searchopt=self.searchopt
+                                                  searchopt=self.searchopt,
+                                                  logger=self.logger
                                                  )
                         )
       # print (tempList)
+      self.logger.info("Retrived {0} gallery(s)' information by exploiting e-h api".format(len(tempList)))
       tempDict = datafilter.genmangainfoapi(resultJsonDict=tempList, searchopt=self.searchopt)
-      threadCounter = 0 # Counter for the multi-threading
+      self.logger.info('Filtered {0} gallery(s) containing uncomfortable tags'.format((len(tempList)-len(tempDict))))
       for url in tempDict:
          t = Thread(target=download.previewImageDL, 
                     name=url, 
                     kwargs={'mangaUrl': url, 
                             'mangaInfo': tempDict[url], 
                             'mangasession': mangasession,
+                            'logger': self.logger,
                             'q': q,
+                            'threadQ': threadQ
                            }
                    )
-         threadCounter += 1
-         t.start()
-         if threadCounter >= generalcfg.dlThreadLimit:
-            t.join()
-            threadCounter = 0
-      t.join()
+         threadQ.put(t)
+      #    threadCounter += 1
+      #    t.start()
+      #    if threadCounter >= generalcfg.dlThreadLimit:
+      #       t.join()
+      #       threadCounter = 0
+      # t.join()
       # print ("DL has completed.")
       imageTempDict = {}  # Temporally store the image objs
+      threadQ.join()
+      self.logger.info('All preview image download threads has completed.')
       while not q.empty():
          temp = q.get()
          imageTempDict.update(temp)
-      # print (imageTempDict)
+      self.logger.info('Image objects retrived.')
+      # print(imageTempDict)
       for url in tempDict:
          if imageTempDict.get(url):
             tempDict[url].update({'imageDict': imageTempDict[url]})
          else:
             tempDict[url].update({'imageDict': {}})
-
       if tempDict:
          for url in tempDict:
             if tempDict[url]:
             #    print (tempDict)
                if tempDict[url]["jptitle"]:
                   outjptitle = tempDict[url].get("jptitle")[0]
-                  strDict.update({outjptitle: url})
+                  # strDict.update({outjptitle: url})
                   if tempDict[url]["imageDict"]:
                      imageObjDict.update(tempDict[url]["imageDict"])
                      del tempDict[url]["imageDict"]
@@ -125,7 +144,7 @@ class MangaSpider():
                elif generalcfg.noEngOnlyGallery == False or tempDict[url]['lang'] == None:   # Say goodbye to all mind fucking English galleries.
                   if tempDict[url].get("entitle") != None:
                      outentitle = tempDict[url].get("entitle")[0]
-                     strDict.update({outentitle: url})
+                  #    strDict.update({outentitle: url})
                      if tempDict[url]["imageDict"]:
                         imageObjDict.update(tempDict[url]["imageDict"])
                         del tempDict[url]["imageDict"]
@@ -142,7 +161,7 @@ class MangaSpider():
                      pass
                   elif tempDict[url]["entitle"]:
                      outentitle = tempDict[url].get("entitle")[0]
-                     strDict.update({outentitle: url})
+                  #    strDict.update({outentitle: url})
                      if tempDict[url]["imageDict"]:
                         imageObjDict.update(tempDict[url]["imageDict"])
                         del tempDict[url]["imageDict"]
@@ -159,23 +178,37 @@ class MangaSpider():
                pass 
          else:
             pass  
-      if strDict:
-         outStr = ""
-         internalCount = 0
-         for key in strDict:  #Separate the result strings to be more appealing
-            outStr += "{0} \n{1}\n ".format(key, strDict[key])
-            internalCount += 1
-            if internalCount == 7:
-               outStr += '/././././././././' +"\n "
-               internalCount = 0
-         strList += outStr.split('/././././././././')
-         outDict.update({"strList": strList, "imageObjDict": imageObjDict})
+      # if strDict:
+      #    outStr = ""
+      #    internalCount = 0
+      #    for key in strDict:  #Separate the result strings to be more appealing
+      #       outStr += "{0} \n{1}\n ".format(key, strDict[key])
+      #       internalCount += 1
+      #       if internalCount == 7:
+      #          outStr += '/././././././././' +"\n "
+      #          internalCount = 0
+      #    strList += outStr.split('/././././././././')
+      #    outDict.update({"strList": strList, "imageObjDict": imageObjDict})
+      for uid in userInfoDict:
+         outDict.update({uid: imageTempDict[uid]})
       mangaDict.update(userInfoDict)
       with open("{0}.mangalog".format(self.path), "w") as fo:
          json.dump(mangaDict, fo)
       return outDict
 
 
+def thread_containor(threadQ):
+   # Put any threads to this function and it would run separately.
+   # But please remember put the threadQ obj into the functions in those threads to use threadQ.task_done().
+   # Or the program would stock.
+   threadCounter = 0
+   while True:
+      t = threadQ.get()
+      t.start()
+      threadCounter += 1
+      if threadCounter == generalcfg.dlThreadLimit:  # This condition limit the amount of threads running simultaneously.
+         t.join() 
+         threadCounter = 0
 
 def exhcookiestest(mangasessionTest, cookies, forceCookiesEH=False):   #Evaluate whether the cookies could access exh
    requests.utils.add_dict_to_cookiejar(mangasessionTest.cookies, cookies)
@@ -201,16 +234,21 @@ def exhcookiestest(mangasessionTest, cookies, forceCookiesEH=False):   #Evaluate
 
 
 
-def Sessiongenfunc(searchopt, cookies):
+def Sessiongenfunc(searchopt, cookies, logger):
    mangasession = requests.Session()
    if generalcfg.headers:
       mangasession.headers.update(random.choice(generalcfg.headers))
    else:
       mangasession.headers.update({{"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36",}})
    if generalcfg.proxy:
-      proxypattern = re.compile(r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:\d{1,5})")
-      proxy = proxypattern.search(random.choice(generalcfg.proxy)).group(1)
+      # proxypattern = re.compile(r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:\d{1,5})")
+      # proxy = proxypattern.search(random.choice(generalcfg.proxy)).group(1)
+      if generalcfg.proxy[0].find('socks5://') != -1:
+         proxy = generalcfg.proxy[0].replace('socks5://', 'socks5h://')
+      else:
+         proxy = generalcfg.proxy[0]
       proxies = {"http": proxy, "https": proxy,}
+      # print (proxies)
       mangasession.proxies = proxies
    else:
       pass
@@ -230,26 +268,31 @@ def Sessiongenfunc(searchopt, cookies):
             searchopt.eh = True
    else:
       searchopt.eh = True
+   logger.info('Requests session generated.')
    return mangasession
 
-def Spidercontrolasfunc(searchopt, cookies, path):
+def Spidercontrolasfunc(searchopt, cookies, path, logger):
    mangasession = Sessiongenfunc(searchopt=searchopt, 
-                                 cookies=cookies)
+                                 cookies=cookies,
+                                 logger=logger)
    urls = generator.urlgenerate(searchopt)
    manga = MangaSpider(urls=urls, 
                        mangasession=mangasession,
-                       searchopt=searchopt
+                       searchopt=searchopt,
+                       logger=logger
                       ) 
    urlsdict = MangaSpider.pagedownload(manga)
    analysisUrls = list(urlsdict.values())
    manga2 = MangaSpider(urls=analysisUrls, 
                         mangasession=mangasession,
                         searchopt=searchopt,
-                        path=path
+                        path=path,
+                        logger=logger
                        )
    outDict = MangaSpider.mangaanalysis(manga2)
    outDict.update({'cookiesDict': requests.utils.dict_from_cookiejar(mangasession.cookies)})
    del mangasession
+   logger.info('Search completed.')
    return outDict
 
 

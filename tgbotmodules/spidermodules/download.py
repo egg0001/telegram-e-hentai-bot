@@ -42,8 +42,8 @@ def userfiledetect(path):
             pass
       
 
-def previewImageDL(mangaUrl, mangaInfo, mangasession, q):
-#    print ('{0} image DL has started.'.format(mangaUrl))
+def previewImageDL(mangaUrl, mangaInfo, mangasession, logger, q, threadQ):
+   logger.info('Begin to retrive preview image of {0}.'.format(mangaUrl))
    if mangaInfo["jptitle"]:
       title = mangaInfo["jptitle"][0]
    elif mangaInfo["entitle"]:
@@ -53,28 +53,32 @@ def previewImageDL(mangaUrl, mangaInfo, mangasession, q):
    previewimg = {'imageurlSmall': mangaInfo["imageurlSmall"], 
                  'imageForm': mangaInfo["imageForm"], 
                  'title': title,
-                 'imageurlBig': ''}
+                 'imageurlBig': '',
+                 'imageurlBigReload': '',
+                 'mangaUrl': mangaUrl}
    if generalcfg.dlFullPreviewImage == True:
       imagePatternBig = re.compile(r'''href="(https://[a-z-]+\.org/[a-z0-9]/[a-z0-9]+/[a-z0-9]+\-1)"''')
       tdHtmlContent = accesstoehentai(method='get',
                                       mangasession=mangasession,
                                       stop=generator.Sleep(2),
-                                      urls=[mangaUrl])
+                                      urls=[mangaUrl],
+                                      logger=logger)
       
       imageMatchBig = imagePatternBig.search(tdHtmlContent[0])
       if imageMatchBig:
          previewimg.update({'imageurlBig': imageMatchBig.group(1)})
-      imageDict = previewDlToMemoryBig(previewimg=previewimg, mangasession=mangasession)
+      imageDict = previewDlToMemoryBig(previewimg=previewimg, mangasession=mangasession, logger=logger)
    else:
-      imageDict = previewdltomenory(previewimg=previewimg, mangasession=mangasession)
+      imageDict = previewdltomenory(previewimg=previewimg, mangasession=mangasession, logger=logger)
    imageDict = {mangaUrl: imageDict}
    q.put(imageDict)
+   threadQ.task_done()
 
    
       
 
 
-def accesstoehentai(method, mangasession, stop, urls=None, searchopt=None):
+def accesstoehentai(method, mangasession, stop, logger, urls=None, searchopt=None):
 #    print (urls)
    resultList = []
    if method == 'get':
@@ -107,7 +111,8 @@ def accesstoehentai(method, mangasession, stop, urls=None, searchopt=None):
             #       r = mangasession.post('https://api.exhentai.org/api.php', json=ii)
                mangaDictMeta = r.json()
                resultList.extend(mangaDictMeta['gmetadata'])
-         except:
+         except Exception as error:
+            logger.error('Encountered an error while access e-h/exh - {0}'.format(str(error)))
             err += 1
             generator.Sleep.Havearest(stop)
          else:
@@ -115,84 +120,66 @@ def accesstoehentai(method, mangasession, stop, urls=None, searchopt=None):
             err = 0
             break
       else:
-         print ("network issue")
+         logger.error('Retry limitation reached {0} times, discarded'.format(generalcfg.dlRetry))
          err = 0
    return resultList
 
 
-def imageDownload(mangasession, previewimg, fromBig=False):
+def imageDownload(mangasession, previewimg, logger, fromBig=False):
+
    err = 0
-   previewimg.update({'filename': '{0}.{1}'.format(previewimg['title'], previewimg['imageForm'])})
    imageDict = {}
-   previewimgUrl = ""
    if fromBig == True:
-      # print ("Try to access the first image url in the gallery.")
-      # print (previewimg['imageurlBig'])
-      time.sleep(random.uniform(1, 2))
-      for err in range(generalcfg.dlRetry):
-         try:
-            tempUrl = previewimg['imageurlBig']
-            # print (tempUrl)
-            r = mangasession.get(tempUrl)
-            # print ("Accessed to the first page")
-            # print (r)
-            htmlcontent = r.text
-            # print (htmlcontent)
-            # imagepattern = re.compile(r'''src=\"(http://[0-9:\.]+\/[a-zA-Z0-9]\/[a-zA-Z0-9-]+\/keystamp=[a-zA-Z0-9-]+;fileindex=[a-zA-Z0-9]+;xres=[a-zA-Z0-9]+\/.+\.[a-zA-Z]+)" style=''')
-            # matchUrls = imagepattern.search(htmlcontent)
-            # previewimgUrl = matchUrls.group(1)
-            imagepattern = re.compile(r'''src=\"(http://[0-9:\.]+\/[a-zA-Z0-9]\/[a-zA-Z0-9-]+\/keystamp=[a-zA-Z0-9-]+;fileindex=[a-zA-Z0-9]+;xres=[a-zA-Z0-9]+\/.+\.([a-zA-Z]+))" style=''')
-            matchUrls = imagepattern.search(htmlcontent)
-            imagepatternAlter = re.compile(r'''\"(http://[0-9:\.]+\/[a-zA-Z0-9]\/[a-zA-Z0-9-]+\/keystamp=[a-zA-Z0-9-]+[;fileindex=]?[a-zA-Z0-9]?[;xres=]?[a-zA-Z0-9]?\/.+\.[a-zA-Z]+)\"''')
-            matchUrlsAlter = imagepatternAlter.search(htmlcontent)
-            if matchUrls:
-               imageUrl = matchUrls.group(1)
-               imageForm = matchUrls.group(2)
-            else:
-               imageUrl = matchUrlsAlter.group(1)
-               imageForm = matchUrlsAlter.group(2)
-
-            # print (previewimgUrl)
-         except:
-            print ('Access error.')
-            err += 1
-            time.sleep(0.5)
-         else:
-            # print ('Access complete.')
-            # print (previewimgUrl)
-            time.sleep(0.5)
-            err = 0
-            break
-      else:
-         print ('Newwork issue')
-         err = 0
-         previewimgUrl = previewimg['imageurlSmall']
+      logger.info('Begin to download full preview image of {0}.'.format(previewimg['mangaUrl']))
    else:
-      previewimgUrl = previewimg['imageurlSmall']
-
-   if previewimgUrl:
-      for err in range(generalcfg.dlRetry):
-         try:
-            previewimage = mangasession.get(previewimgUrl)
-            previewimage.content
+      logger.info('Begin to download small preview image of {0}.'.format(previewimg['mangaUrl']))
+   for err in range(generalcfg.dlRetry):
+      try:
+         if fromBig == True:
+            if err != 0 and previewimg['imageurlBigReload']:
+               r = mangasession.get(previewimg['imageurlBigReload'])
+            else:
+               r = mangasession.get(previewimg['imageurlBig'])
+            downloadUrlsDict = mangadlhtmlfilter(htmlContent=r.text, url=previewimg['imageurlBig'])
+            previewimg.update({'imageurlBigReload': downloadUrlsDict['reloadUrl']})
+            if downloadUrlsDict['imageUrl']:
+               previewimgUrl = downloadUrlsDict['imageUrl']
+            else:
+               previewimgUrl = previewimg['imageurlSmall']
+         else:
+            logger.warning('Could not retrive full image downloading url of {0}, try to download small one.'.format(previewimg['mangaUrl']))
+            previewimgUrl = previewimg['imageurlSmall']
+         previewimage = mangasession.get(previewimgUrl)
+         if previewimage.status_code == 200:
+            contentTypeList = previewimage.headers['Content-Type'].split('/')
+            previewimg['imageForm'] = contentTypeList[1]
+            if previewimg['imageForm'] == ('jpg' or 'JPG'):
+               previewimg.update({'imageForm': 'jpeg'})
+            previewimg.update({'filename': '{0}.{1}'.format(previewimg['title'], previewimg['imageForm'])})
+            if len(previewimage.content) != int(previewimage.headers['content-length']):
+               raise jpegEOIError('Image is corrupted.')
             i = Image.open(io.BytesIO(previewimage.content))
             bio = io.BytesIO()
             bio.name = previewimg['filename']
             i.save(bio)
             imageDict = {previewimg['filename']: bio}
-         except:
-            err += 1
-            time.sleep(0.5)
          else:
-            err = 0
-            break
+            raise downloadStatusCodeError('Error status code.')
+      except Exception as error:
+         logger.error('Encountered an error while downloading image {0} - {1}'.format(previewimg['mangaUrl'], str(error)))
+         err += 1
+         time.sleep(0.5)
       else:
-         print ('Network issue')
          err = 0
+         break    
+   else:
+      err = 0
+      logger.error('Error limitation while download {0} is reached, stop this thread.'.format(previewimg['mangaUrl']))
+
    return imageDict
 
 
-def previewdltomenory(previewimg, mangasession):
+def previewdltomenory(previewimg, mangasession, logger):
    imageDict = {}
    if previewimg['imageForm']:
       pass
@@ -201,13 +188,14 @@ def previewdltomenory(previewimg, mangasession):
    if previewimg['imageurlSmall']:
 
       imageDict = imageDownload(previewimg=previewimg,
-                                mangasession=mangasession
+                                mangasession=mangasession,
+                                logger=logger
                                 )
    else:
       pass
    return imageDict
 
-def previewDlToMemoryBig(previewimg, mangasession):
+def previewDlToMemoryBig(previewimg, mangasession, logger):
    imageDict = {}
    if previewimg['imageForm']:
       pass
@@ -216,6 +204,7 @@ def previewDlToMemoryBig(previewimg, mangasession):
    if previewimg['imageurlBig']:
       imageDict = imageDownload(previewimg=previewimg,
                                 mangasession=mangasession,
+                                logger=logger,
                                 fromBig=True
                                )
    else:
@@ -223,13 +212,35 @@ def previewDlToMemoryBig(previewimg, mangasession):
    if imageDict:
       pass
    elif previewimg['imageurlSmall']:
+      logger.warning('Download full preview image of {0} failed, try to download small image.'.format(previewimg['mangaUrl']))
       imageDict = imageDownload(previewimg=previewimg,
-                                mangasession=mangasession
+                                mangasession=mangasession,
+                                logger=logger
                                 )
    else:
       pass
    return imageDict
    
       
-   
+def mangadlhtmlfilter(htmlContent, url):
+   downloadUrlsDict = {'imageUrl': "", 'reloadUrl': ''}
+   imagePattern = re.compile('''<img id="img" src="(http://.+)" style="''')
+   matchUrls = imagePattern.search(htmlContent)
+   reloadPattern = re.compile(r'''id\=\"loadfail\" onclick\=\"return nl\(\'([0-9\-]+)\'\)\"''')
+   reloadUrl = reloadPattern.search(htmlContent)
+   if matchUrls:                     # This block still has some strange issues..... 
+      downloadUrlsDict['imageUrl'] = matchUrls.group(1)
+   if reloadUrl:
+      downloadUrlsDict['reloadUrl'] = '{0}?nl={1}'.format(url, reloadUrl.group(1))
+   return downloadUrlsDict  
 
+#-------------Several personalized Exceptions----------------------
+
+class jpegEOIError(Exception):
+   pass
+
+class htmlPageError(Exception):
+   pass
+
+class downloadStatusCodeError(Exception):
+   pass

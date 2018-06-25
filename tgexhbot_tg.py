@@ -6,6 +6,8 @@ import os
 import time
 import datetime
 from ast import literal_eval
+from queue import Queue
+from threading import Thread
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler 
@@ -16,7 +18,6 @@ from tgbotconvhandler import spiderfunction
 from tgbotmodules import replytext 
 from tgbotmodules.spidermodules import generalcfg
 from tgbotmodules import userdatastore
-
  
 def start(bot, update, user_data, chat_data):
    user_data.clear()
@@ -44,21 +45,39 @@ def state(bot, update, user_data, chat_data):
    if chat_data['state'] != 'END':
       state = STATE 
    else:
-      print (user_data)
+      # print (user_data)
       userdata = ({chat_data["virtualusername"]: user_data})
-      searcheh(bot=bot, user_data=userdata)
+      threadName = time.asctime()
+      t = Thread(target=searcheh, 
+                 name=threadName, 
+                 kwargs={'bot':bot,
+                         'user_data':user_data,
+                         'threadQ': threadQ})
+      threadQ.put(t)
       user_data.clear()
       chat_data.clear() 
       logger.info("The user_data and chat_data of user %s is clear.", str(update.message.from_user.username))
       state = ConversationHandler.END
    return state
 
-def searcheh(bot, job=None, user_data=None):
+def searchIntervalCTL(bot, job, user_data=None):
+    threadName = time.asctime()
+    t = Thread(target=searcheh, 
+               name=threadName, 
+               kwargs={'bot':bot,
+                        'user_data':user_data,
+                        'threadQ': threadQ})
+    threadQ.put(t)
+
+
+def searcheh(bot, threadQ, job=None, user_data=None):
    logger.info("Search is beginning")
    if user_data:
       for ud in user_data:
          user_data[ud].update({'userpubchenn': False})
+
          logger.info("User %s has finished profile setting process, test search is begining.", user_data[ud]['actualusername'])
+      # print (user_data)
       spiderDict = user_data
       toTelegramDict = spiderfunction(logger=logger, spiderDict=spiderDict)
    else:
@@ -67,40 +86,56 @@ def searcheh(bot, job=None, user_data=None):
       logger.info("All users' search has been completed, begin to send the result")
    if toTelegramDict:
       for td in toTelegramDict:
+
          chat_idList = []     
          if spiderDict[td].get('chat_id') and spiderDict[td]['resultToChat'] == True:
             chat_idList.append(spiderDict[td]['chat_id'])
          if spiderDict[td]["userpubchenn"] == True and generalcfg.pubChannelID:      # Public channel id might be empty
             chat_idList.append(generalcfg.pubChannelID)
          logger.info("Begin to send user %s's result.", td)
+         
          for chat_id in chat_idList:
+            if len(toTelegramDict[td]) == 0:
+               messageDict = {"messageCate": "message",
+                              "messageContent": ["------Could not find any new result for {0}------".format(str(td))]}
+               channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
+               continue
             messageDict = {"messageCate": "message",
                            "messageContent": ["------This is the result of {0}------".format(str(td))]}
-            channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
-            if toTelegramDict[td].get('imageObjDict'):
-               for obj in toTelegramDict[td]['imageObjDict']:
-                  messageDict = {'messageCate': "photo", "messageContent": [toTelegramDict[td]["imageObjDict"][obj]]}
-                  channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
+            channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
+            for result in toTelegramDict[td]:
+               for obj in toTelegramDict[td][result]:
+                  messageDict = {'messageCate': "photo", "messageContent": [toTelegramDict[td][result][obj]]}
+                  channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
                   messageDict = {'messageCate': "message", "messageContent": [obj]}
-                  channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
-            if toTelegramDict[td].get("strList"):
-               if toTelegramDict[td]["strList"]:
-                  messageDict = {'messageCate': "message", "messageContent": toTelegramDict[td]["strList"]}
-                  channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id) 
-               else:
-                  messageDict = {'messageCate': "message", "messageContent": ["We do not have any new result."]}
-                  channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
-            else:
-               messageDict = {'messageCate': "message", "messageContent": ["We do not have any new result."]}
-               channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
-         logger.info("User %s's result has been sent.", td)
+                  channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
+               messageDict = {'messageCate': "message", "messageContent": [result]}
+               channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
+            # if toTelegramDict[td].get('imageObjDict'):
+            #    for obj in toTelegramDict[td]['imageObjDict']:
+            #       messageDict = {'messageCate': "photo", "messageContent": [toTelegramDict[td]["imageObjDict"][obj]]}
+            #       channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
+            #       messageDict = {'messageCate': "message", "messageContent": [obj]}
+            #       channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
+            # if toTelegramDict[td].get("strList"):
+            #    if toTelegramDict[td]["strList"]:
+            #       messageDict = {'messageCate': "message", "messageContent": toTelegramDict[td]["strList"]}
+            #       channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger) 
+            #    else:
+            #       messageDict = {'messageCate': "message", "messageContent": ["We do not have any new result."]}
+            #       channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
+            # else:
+            #    messageDict = {'messageCate': "message", "messageContent": ["We do not have any new result."]}
+            #    channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
+         logger.info("User {0}'s result has been sent.".format(td))
       logger.info("All users' result has been sent.")
    else: 
       logger.info("Could not gain any new result to users.")         
       messageDict = {"messageCate": "message", "messageContent": ["We do not have any new result"]}
-      channelmessage(bot=bot, messageDict=messageDict, chat_id=generalcfg.pubChannelID)
+      channelmessage(bot=bot, messageDict=messageDict, chat_id=generalcfg.pubChannelID, logger=logger)
+   threadQ.task_done()
 
-def channelmessage(bot, messageDict, chat_id): 
+def channelmessage(bot, messageDict, chat_id, logger): 
    messageContent = messageDict["messageContent"]
    for mC in messageContent:
       err = 0
@@ -119,11 +154,26 @@ def channelmessage(bot, messageDict, chat_id):
             err = 0
             break
       else:
-         print ("network issue")
+         logger.error("Retry limitation for sending message reached, discarded.")
          err = 0
 
+
+def thread_containor(threadQ):
+   # Put any threads to this function and it would run separately.
+   # But please remember put the threadQ obj into the functions in those threads to use threadQ.task_done().
+   # Or the program would stock.
+   threadCounter = 0
+   while True:
+      t = threadQ.get()
+      logger.info('Added a new thread to thread containor - {0} '.format(t.name))
+      t.start()
+      threadCounter += 1
+      if threadCounter == 1:  # This condition limit the amount of threads running simultaneously.
+         t.join() 
+         threadCounter = 0
+
 def autoCreateJob(job):
-   job.run_repeating(searcheh, interval=generalcfg.interval, first=5)
+   job.run_repeating(searchIntervalCTL, interval=generalcfg.interval, first=5)
 
 def cancel(bot, update, user_data, chat_data):  
    update.message.reply_text(text=replytext.UserCancel)
@@ -152,12 +202,22 @@ def main():
    dp.add_handler(conv_handler)
    dp.add_error_handler(error)
    autoCreateJob(job=job)
+   tc = Thread(target=thread_containor, 
+               name='tc', 
+               kwargs={'threadQ': threadQ},
+               daemon=True)
+   tc.start()
+   logger.info('Spider thread containor initiated.')
    updater.start_polling(poll_interval=1.0, timeout=1.0)
+   logger.info('Bot initiated.')
    updater.idle()
 
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
+threadQ = Queue()  # This queue object put the spider function into the thread containor 
+                   # Using this thread containor wound also limits the download function thread
+                   # to prevent e-h to ban IP.
 (STATE) = range(1)
 
 if __name__ == '__main__':
