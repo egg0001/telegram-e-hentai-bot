@@ -42,14 +42,18 @@ noEngOnlyGallery = True  # Discard all the gerallies only containing English tit
 
 proxy = [] # This variable would let both the bot module and the requests module to utilize proxy
                                   # to access network, which is useful for the territory blocking telegram and/or e-hentai.
-                                  # ONLY SUPPORT HTTP/HTTPS PROXIES.
-                                  # EXAMPLE: proxy = ['http://127.0.0.1:1080'] 
+                                  # SUPPORT HTTP/HTTPS/SOCKS5 PROXIES.
+                                  # EXAMPLE: proxy = ['http://127.0.0.1:1080'] or proxy = ['socks5://127.0.0.1:1080']
 
 dlFullPreviewImage = True # This variable would determin whether the bot downloads the first image in the gallery as 
                           # the preview image sending to channels.
                           # While it would provide a better image quality, it would also consume e-hentai image quota.
 
 dlRetry = 3  # This variable determins the retry times while downloading preview images.
+
+dlThreadLimit = 3  # This variable determins the maximum thread amount while downloading preview images.
+                   # While exploiting too many threads to DL images, e-h would ban the ip.
+                   # If efficiency is not a major concern, please set this variable to 1.
 
 unwantedfemale = ['ssbbw']
 unwantedmale = ['males_only', 'yaoi'] 
