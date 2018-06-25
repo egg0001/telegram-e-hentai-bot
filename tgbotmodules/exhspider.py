@@ -120,6 +120,7 @@ class MangaSpider():
          temp = q.get()
          imageTempDict.update(temp)
       self.logger.info('Image objects retrived.')
+      # print(imageTempDict)
       for url in tempDict:
          if imageTempDict.get(url):
             tempDict[url].update({'imageDict': imageTempDict[url]})
@@ -131,7 +132,7 @@ class MangaSpider():
             #    print (tempDict)
                if tempDict[url]["jptitle"]:
                   outjptitle = tempDict[url].get("jptitle")[0]
-                  strDict.update({outjptitle: url})
+                  # strDict.update({outjptitle: url})
                   if tempDict[url]["imageDict"]:
                      imageObjDict.update(tempDict[url]["imageDict"])
                      del tempDict[url]["imageDict"]
@@ -143,7 +144,7 @@ class MangaSpider():
                elif generalcfg.noEngOnlyGallery == False or tempDict[url]['lang'] == None:   # Say goodbye to all mind fucking English galleries.
                   if tempDict[url].get("entitle") != None:
                      outentitle = tempDict[url].get("entitle")[0]
-                     strDict.update({outentitle: url})
+                  #    strDict.update({outentitle: url})
                      if tempDict[url]["imageDict"]:
                         imageObjDict.update(tempDict[url]["imageDict"])
                         del tempDict[url]["imageDict"]
@@ -160,7 +161,7 @@ class MangaSpider():
                      pass
                   elif tempDict[url]["entitle"]:
                      outentitle = tempDict[url].get("entitle")[0]
-                     strDict.update({outentitle: url})
+                  #    strDict.update({outentitle: url})
                      if tempDict[url]["imageDict"]:
                         imageObjDict.update(tempDict[url]["imageDict"])
                         del tempDict[url]["imageDict"]
@@ -177,17 +178,19 @@ class MangaSpider():
                pass 
          else:
             pass  
-      if strDict:
-         outStr = ""
-         internalCount = 0
-         for key in strDict:  #Separate the result strings to be more appealing
-            outStr += "{0} \n{1}\n ".format(key, strDict[key])
-            internalCount += 1
-            if internalCount == 7:
-               outStr += '/././././././././' +"\n "
-               internalCount = 0
-         strList += outStr.split('/././././././././')
-         outDict.update({"strList": strList, "imageObjDict": imageObjDict})
+      # if strDict:
+      #    outStr = ""
+      #    internalCount = 0
+      #    for key in strDict:  #Separate the result strings to be more appealing
+      #       outStr += "{0} \n{1}\n ".format(key, strDict[key])
+      #       internalCount += 1
+      #       if internalCount == 7:
+      #          outStr += '/././././././././' +"\n "
+      #          internalCount = 0
+      #    strList += outStr.split('/././././././././')
+      #    outDict.update({"strList": strList, "imageObjDict": imageObjDict})
+      for uid in userInfoDict:
+         outDict.update({uid: imageTempDict[uid]})
       mangaDict.update(userInfoDict)
       with open("{0}.mangalog".format(self.path), "w") as fo:
          json.dump(mangaDict, fo)

@@ -42,7 +42,7 @@ noEngOnlyGallery = True  # Discard all the gerallies only containing English tit
 
 proxy = [] # This variable would let both the bot module and the requests module to utilize proxy
                                   # to access network, which is useful for the territory blocking telegram and/or e-hentai.
-                                  # It supports http, https and socks5 proxies
+                                  # SUPPORT HTTP/HTTPS/SOCKS5 PROXIES.
                                   # EXAMPLE: proxy = ['http://127.0.0.1:1080'] or proxy = ['socks5://127.0.0.1:1080']
 
 dlFullPreviewImage = True # This variable would determin whether the bot downloads the first image in the gallery as 

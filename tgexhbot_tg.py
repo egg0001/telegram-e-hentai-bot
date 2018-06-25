@@ -89,33 +89,48 @@ def searcheh(bot, threadQ, job=None, user_data=None):
       logger.info("All users' search has been completed, begin to send the result")
    if toTelegramDict:
       for td in toTelegramDict:
+
          chat_idList = []     
          if spiderDict[td].get('chat_id') and spiderDict[td]['resultToChat'] == True:
             chat_idList.append(spiderDict[td]['chat_id'])
          if spiderDict[td]["userpubchenn"] == True and generalcfg.pubChannelID:      # Public channel id might be empty
             chat_idList.append(generalcfg.pubChannelID)
          logger.info("Begin to send user %s's result.", td)
+         
          for chat_id in chat_idList:
+            if len(toTelegramDict[td]) == 0:
+               messageDict = {"messageCate": "message",
+                              "messageContent": ["------Could not find any new result for {0}------".format(str(td))]}
+               channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
+               continue
             messageDict = {"messageCate": "message",
                            "messageContent": ["------This is the result of {0}------".format(str(td))]}
             channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
-            if toTelegramDict[td].get('imageObjDict'):
-               for obj in toTelegramDict[td]['imageObjDict']:
-                  messageDict = {'messageCate': "photo", "messageContent": [toTelegramDict[td]["imageObjDict"][obj]]}
+            for result in toTelegramDict[td]:
+               for obj in toTelegramDict[td][result]:
+                  messageDict = {'messageCate': "photo", "messageContent": [toTelegramDict[td][result][obj]]}
                   channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
                   messageDict = {'messageCate': "message", "messageContent": [obj]}
                   channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
-            if toTelegramDict[td].get("strList"):
-               if toTelegramDict[td]["strList"]:
-                  messageDict = {'messageCate': "message", "messageContent": toTelegramDict[td]["strList"]}
-                  channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger) 
-               else:
-                  messageDict = {'messageCate': "message", "messageContent": ["We do not have any new result."]}
-                  channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
-            else:
-               messageDict = {'messageCate': "message", "messageContent": ["We do not have any new result."]}
+               messageDict = {'messageCate': "message", "messageContent": [result]}
                channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
-         logger.info("User %s's result has been sent.", td)
+            # if toTelegramDict[td].get('imageObjDict'):
+            #    for obj in toTelegramDict[td]['imageObjDict']:
+            #       messageDict = {'messageCate': "photo", "messageContent": [toTelegramDict[td]["imageObjDict"][obj]]}
+            #       channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
+            #       messageDict = {'messageCate': "message", "messageContent": [obj]}
+            #       channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
+            # if toTelegramDict[td].get("strList"):
+            #    if toTelegramDict[td]["strList"]:
+            #       messageDict = {'messageCate': "message", "messageContent": toTelegramDict[td]["strList"]}
+            #       channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger) 
+            #    else:
+            #       messageDict = {'messageCate': "message", "messageContent": ["We do not have any new result."]}
+            #       channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
+            # else:
+            #    messageDict = {'messageCate': "message", "messageContent": ["We do not have any new result."]}
+            #    channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
+         logger.info("User {0}'s result has been sent.".format(td))
       logger.info("All users' result has been sent.")
    else: 
       logger.info("Could not gain any new result to users.")         

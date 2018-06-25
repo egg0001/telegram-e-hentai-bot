@@ -520,6 +520,7 @@ def spiderfunction(logger, spiderDict=None):
             spiderDict[sd]["usercookies"] = outDict['cookiesDict']
             cookiesUpdateDict = {sd: spiderDict[sd]}
             userdatastore.datastore(userdict=cookiesUpdateDict, fromSpider=True)
+            del outDict['cookiesDict']
       else:
          pass
    return toTelegramDict
