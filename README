@@ -13,7 +13,7 @@ WHAT'S NEW
 1 The bot would exploit a stable multi-threading method to download the preview images significantly improving the 
   efficiency.
 2 It now supports socks5 proxy.
-3 Optimized the format while sending result. Now the connection betwent image, title and url is more clear.
+3 3 Optimized the format while sending the result. Now the connection between image, title, and URL is more clear.
 
  
 MAJOR FEATURES
