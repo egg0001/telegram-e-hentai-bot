@@ -10,13 +10,10 @@ This version would not support the previous userdata structure. Although I have 
 
 WHAT'S NEW
 
-1 The bot could send the result to users' private chat with the bot rather than users' personal channel
-  since dealing with channel is annoying.
-2 The bot could now update every user's cookies after search.
-3 Now if the bot does not know where to send the users' result (leaking chat_id), it would not initiate 
-  search in the first place.  
-4 The search function now also supports e-hentai's list mode rather than relies on adding an extra 
-  variable in cookies and converting the search to thumbnail mode. 
+1 The bot would exploit a stable multi-threading method to download the preview images significantly improving the 
+  efficiency.
+2 It now supports socks5 proxy.
+3 Optimized the format while sending result. Now the connection betwent image, title and url is more clear.
 
  
 MAJOR FEATURES
