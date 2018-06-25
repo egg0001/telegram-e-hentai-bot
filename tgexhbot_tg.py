@@ -6,12 +6,8 @@ import os
 import time
 import datetime
 from ast import literal_eval
-<<<<<<< HEAD
-from threading import Lock
-=======
 from queue import Queue
 from threading import Thread
->>>>>>> 4ff95a89abd2717f9462f4e46cb489ab53278365
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler 
@@ -20,14 +16,12 @@ from telegram.ext import ConversationHandler
 from tgbotconvhandler import messageanalyze
 from tgbotconvhandler import spiderfunction
 from tgbotmodules import replytext 
+# from tgbotmodules import botconfig
 from tgbotmodules.spidermodules import generalcfg
 from tgbotmodules import userdatastore
-<<<<<<< HEAD
 
-
-=======
+# from tgbotmodules import userdatastore
  
->>>>>>> 4ff95a89abd2717f9462f4e46cb489ab53278365
 def start(bot, update, user_data, chat_data):
    user_data.clear()
    chat_data.clear()
@@ -69,11 +63,6 @@ def state(bot, update, user_data, chat_data):
       state = ConversationHandler.END
    return state
 
-<<<<<<< HEAD
-def searcheh(bot, job=None, user_data=None):
-   tLock = Lock()
-   tLock.acquire()
-=======
 def searchIntervalCTL(bot, job, user_data=None):
     threadName = time.asctime()
     t = Thread(target=searcheh, 
@@ -85,7 +74,6 @@ def searchIntervalCTL(bot, job, user_data=None):
 
 
 def searcheh(bot, threadQ, job=None, user_data=None):
->>>>>>> 4ff95a89abd2717f9462f4e46cb489ab53278365
    logger.info("Search is beginning")
    if user_data:
       for ud in user_data:
@@ -147,13 +135,8 @@ def searcheh(bot, threadQ, job=None, user_data=None):
    else: 
       logger.info("Could not gain any new result to users.")         
       messageDict = {"messageCate": "message", "messageContent": ["We do not have any new result"]}
-<<<<<<< HEAD
-      channelmessage(bot=bot, messageDict=messageDict, chat_id=generalcfg.pubChannelID)
-   tLock.release()
-=======
       channelmessage(bot=bot, messageDict=messageDict, chat_id=generalcfg.pubChannelID, logger=logger)
    threadQ.task_done()
->>>>>>> 4ff95a89abd2717f9462f4e46cb489ab53278365
 
 def channelmessage(bot, messageDict, chat_id, logger): 
    messageContent = messageDict["messageContent"]
