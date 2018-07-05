@@ -5,7 +5,6 @@ import os
 import requests
 import time
 import json
-from PIL import Image
 import io
 import re
 import random
@@ -42,37 +41,36 @@ def userfiledetect(path):
             pass
       
 
-def previewImageDL(mangaUrl, mangaInfo, mangasession, logger, q, threadQ):
-   logger.info('Begin to retrive preview image of {0}.'.format(mangaUrl))
-   if mangaInfo["jptitle"]:
-      title = mangaInfo["jptitle"][0]
-   elif mangaInfo["entitle"]:
-      title = mangaInfo["entitle"]
-   else:
-      title = ""
-   previewimg = {'imageurlSmall': mangaInfo["imageurlSmall"], 
-                 'imageForm': mangaInfo["imageForm"], 
-                 'title': title,
+def previewImageDL(manga, mangasession, logger, q):
+   logger.info('Begin to retrive preview image of {0}.'.format(manga.url))
+#    if mangaInfo["jptitle"]:
+#       title = mangaInfo["jptitle"][0]
+#    elif mangaInfo["entitle"]:
+#       title = mangaInfo["entitle"]
+#    else:
+#       title = ""
+   previewimg = {'imageurlSmall': manga.imageUrlSmall,
+                 'title': manga.title,
                  'imageurlBig': '',
                  'imageurlBigReload': '',
-                 'mangaUrl': mangaUrl}
+                 'mangaUrl': manga.url}
    if generalcfg.dlFullPreviewImage == True:
       imagePatternBig = re.compile(r'''href="(https://[a-z-]+\.org/[a-z0-9]/[a-z0-9]+/[a-z0-9]+\-1)"''')
       tdHtmlContent = accesstoehentai(method='get',
                                       mangasession=mangasession,
                                       stop=generator.Sleep(2),
-                                      urls=[mangaUrl],
+                                      urls=[manga.url],
                                       logger=logger)
       
       imageMatchBig = imagePatternBig.search(tdHtmlContent[0])
       if imageMatchBig:
          previewimg.update({'imageurlBig': imageMatchBig.group(1)})
-      imageDict = previewDlToMemoryBig(previewimg=previewimg, mangasession=mangasession, logger=logger)
+      bio = imageDownload(previewimg=previewimg, mangasession=mangasession, logger=logger, fromBig=True)
    else:
-      imageDict = previewdltomenory(previewimg=previewimg, mangasession=mangasession, logger=logger)
-   imageDict = {mangaUrl: imageDict}
+      bio = imageDownload(previewimg=previewimg, mangasession=mangasession, logger=logger)
+   imageDict = {manga.url: bio}
+#    print (imageDict)
    q.put(imageDict)
-   threadQ.task_done()
 
    
       
@@ -151,18 +149,10 @@ def imageDownload(mangasession, previewimg, logger, fromBig=False):
             previewimgUrl = previewimg['imageurlSmall']
          previewimage = mangasession.get(previewimgUrl)
          if previewimage.status_code == 200:
-            contentTypeList = previewimage.headers['Content-Type'].split('/')
-            previewimg['imageForm'] = contentTypeList[1]
-            if previewimg['imageForm'] == ('jpg' or 'JPG'):
-               previewimg.update({'imageForm': 'jpeg'})
-            previewimg.update({'filename': '{0}.{1}'.format(previewimg['title'], previewimg['imageForm'])})
-            if len(previewimage.content) != int(previewimage.headers['content-length']):
-               raise jpegEOIError('Image is corrupted.')
-            i = Image.open(io.BytesIO(previewimage.content))
-            bio = io.BytesIO()
-            bio.name = previewimg['filename']
-            i.save(bio)
-            imageDict = {previewimg['filename']: bio}
+            bio = io.BytesIO(previewimage.content)
+            bio.name = previewimg['title']
+            if bio.getbuffer().nbytes != int(previewimage.headers['content-length']):
+               raise jpegEOIError('Image is corrupted.')            
          else:
             raise downloadStatusCodeError('Error status code.')
       except Exception as error:
@@ -175,52 +165,8 @@ def imageDownload(mangasession, previewimg, logger, fromBig=False):
    else:
       err = 0
       logger.error('Error limitation while download {0} is reached, stop this thread.'.format(previewimg['mangaUrl']))
-
-   return imageDict
-
-
-def previewdltomenory(previewimg, mangasession, logger):
-   imageDict = {}
-   if previewimg['imageForm']:
-      pass
-   else:
-      previewimg['imageForm'] = 'jpg'
-   if previewimg['imageurlSmall']:
-
-      imageDict = imageDownload(previewimg=previewimg,
-                                mangasession=mangasession,
-                                logger=logger
-                                )
-   else:
-      pass
-   return imageDict
-
-def previewDlToMemoryBig(previewimg, mangasession, logger):
-   imageDict = {}
-   if previewimg['imageForm']:
-      pass
-   else:
-      previewimg['imageForm'] = 'jpg'
-   if previewimg['imageurlBig']:
-      imageDict = imageDownload(previewimg=previewimg,
-                                mangasession=mangasession,
-                                logger=logger,
-                                fromBig=True
-                               )
-   else:
-      pass
-   if imageDict:
-      pass
-   elif previewimg['imageurlSmall']:
-      logger.warning('Download full preview image of {0} failed, try to download small image.'.format(previewimg['mangaUrl']))
-      imageDict = imageDownload(previewimg=previewimg,
-                                mangasession=mangasession,
-                                logger=logger
-                                )
-   else:
-      pass
-   return imageDict
-   
+      bio = None
+   return bio
       
 def mangadlhtmlfilter(htmlContent, url):
    downloadUrlsDict = {'imageUrl': "", 'reloadUrl': ''}

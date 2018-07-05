@@ -11,7 +11,6 @@ def exhtest(htmlContent):
    usefulCookies = False
    if bool(re.search(pattern, htmlContent)):
       usefulCookies = True
-   print (usefulCookies)
    return usefulCookies
    
 def Grossdataspider(htmlcontent):
@@ -170,8 +169,8 @@ def genmangainfoapi(resultJsonDict, searchopt):
       if gmd.get('thumb'):
          imageurlSmall = gmd['thumb']
       #    print (imageurlSmall)
-         imageMatch = re.search(r'''(https://[a-z0-9\.]+\.org\/[a-z0-9]+\/[a-z0-9]+\/[a-z0-9_-]+)\.(\w{3,4})''', imageurlSmall)
-         imageForm = imageMatch.group(2)
+      #    imageMatch = re.search(r'''(https://[a-z0-9\.]+\.org\/[a-z0-9]+\/[a-z0-9]+\/[a-z0-9_-]+)\.(\w{3,4})''', imageurlSmall)
+      #    imageForm = imageMatch.group(2)
       if gmd.get('tags'):
          for tag in gmd['tags']:
             parodyMatch = re.search(r'''parody:(.+)''', tag)
@@ -214,7 +213,6 @@ def genmangainfoapi(resultJsonDict, searchopt):
                        "parody": parody,
                        "character": character,
                        "imageurlSmall": imageurlSmall,
-                       "imageForm": imageForm
                       }})
 #    print (mangaInfo)
    for mi in mangaInfo:

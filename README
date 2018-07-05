@@ -38,7 +38,6 @@ This program relies on several third-party python modules.
 
 requests   http://docs.python-requests.org
 python-telegram-bot   https://python-telegram-bot.readthedocs.io
-PILLOW   https://pillow.readthedocs.io
 
 BASIC USAGE FOR BOT ADMIN
 

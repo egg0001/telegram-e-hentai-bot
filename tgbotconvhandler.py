@@ -508,19 +508,23 @@ def spiderfunction(logger, spiderDict=None):
          searchopt = searchoptgen.searchgenerate(generateDict=spiderDict[sd])
          cookies = spiderDict[sd]["usercookies"]
          userResultStorePath = "./searchresult/{0}/{1}/".format(spiderDict[sd]["actualusername"], sd)
-         outDict =exhspider.Spidercontrolasfunc(searchopt=searchopt, 
-                                                cookies=cookies, 
-                                                path=userResultStorePath,
-                                                logger=logger
-                                               ) 
+         imageObjList = exhspider.Spidercontrolasfunc(searchopt=searchopt, 
+                                                      cookies=cookies, 
+                                                      path=userResultStorePath,
+                                                      logger=logger,
+                                                      datastore=userdatastore.datastore,
+                                                      spiderDict=spiderDict,
+                                                      sd=sd
+                                                     ) 
          logger.info("Search of user %s has completed.", str(sd))
-         if outDict:
-            toTelegramDict.update({str(sd): outDict})
-         if outDict.get('cookiesDict'):
-            spiderDict[sd]["usercookies"] = outDict['cookiesDict']
-            cookiesUpdateDict = {sd: spiderDict[sd]}
-            userdatastore.datastore(userdict=cookiesUpdateDict, fromSpider=True)
-            del outDict['cookiesDict']
+
+         if imageObjList:
+            toTelegramDict.update({sd: imageObjList})
+      #    if outDict.get('cookiesDict'):
+      #       spiderDict[sd]["usercookies"] = outDict['cookiesDict']
+      #       cookiesUpdateDict = {sd: spiderDict[sd]}
+      #       userdatastore.datastore(userdict=cookiesUpdateDict, fromSpider=True)
+      #       del outDict['cookiesDict']
       else:
          pass
    return toTelegramDict

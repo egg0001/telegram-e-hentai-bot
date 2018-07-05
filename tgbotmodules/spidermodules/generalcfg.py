@@ -49,6 +49,9 @@ dlFullPreviewImage = True # This variable would determin whether the bot downloa
                           # the preview image sending to channels.
                           # While it would provide a better image quality, it would also consume e-hentai image quota.
 
+useEngTitle = False       # If true, the bot would return the galleries' English titles to user. Else it would return 
+                          # Japanese titles (if have).
+
 dlRetry = 3  # This variable determins the retry times while downloading preview images.
 
 dlThreadLimit = 3  # This variable determins the maximum thread amount while downloading preview images.

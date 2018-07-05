@@ -77,8 +77,7 @@ def searcheh(bot, threadQ, job=None, user_data=None):
    logger.info("Search is beginning")
    if user_data:
       for ud in user_data:
-         user_data[ud].update({'userpubchenn': False})
-
+         user_data[ud].update({'userpubchenn': False,'resultToChat': True})
          logger.info("User %s has finished profile setting process, test search is begining.", user_data[ud]['actualusername'])
       # print (user_data)
       spiderDict = user_data
@@ -106,30 +105,14 @@ def searcheh(bot, threadQ, job=None, user_data=None):
             messageDict = {"messageCate": "message",
                            "messageContent": ["------This is the result of {0}------".format(str(td))]}
             channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
-            for result in toTelegramDict[td]:
-               for obj in toTelegramDict[td][result]:
-                  messageDict = {'messageCate': "photo", "messageContent": [toTelegramDict[td][result][obj]]}
+            for manga in toTelegramDict[td]:
+            #    for obj in toTelegramDict[td][result]:
+               if manga.previewImageObj:
+                #   print(manga.previewImageObj.getbuffer().nbytes)
+                  messageDict = {'messageCate': "photo", "messageContent": [manga.previewImageObj]}
                   channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
-                  messageDict = {'messageCate': "message", "messageContent": [obj]}
-                  channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
-               messageDict = {'messageCate': "message", "messageContent": [result]}
+               messageDict = {'messageCate': "message", "messageContent": ['{0}\n{1}'.format(manga.title, manga.url)]}
                channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
-            # if toTelegramDict[td].get('imageObjDict'):
-            #    for obj in toTelegramDict[td]['imageObjDict']:
-            #       messageDict = {'messageCate': "photo", "messageContent": [toTelegramDict[td]["imageObjDict"][obj]]}
-            #       channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
-            #       messageDict = {'messageCate': "message", "messageContent": [obj]}
-            #       channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
-            # if toTelegramDict[td].get("strList"):
-            #    if toTelegramDict[td]["strList"]:
-            #       messageDict = {'messageCate': "message", "messageContent": toTelegramDict[td]["strList"]}
-            #       channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger) 
-            #    else:
-            #       messageDict = {'messageCate': "message", "messageContent": ["We do not have any new result."]}
-            #       channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
-            # else:
-            #    messageDict = {'messageCate': "message", "messageContent": ["We do not have any new result."]}
-            #    channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
          logger.info("User {0}'s result has been sent.".format(td))
       logger.info("All users' result has been sent.")
    else: 
@@ -146,6 +129,8 @@ def channelmessage(bot, messageDict, chat_id, logger):
          try:
             if messageDict['messageCate'] == 'photo':
                mC.seek(0)
+            #    print(mC)
+            #    print(mC.name)
                bot.send_photo(chat_id=chat_id, photo=mC)
             else:
                bot.send_message(chat_id=chat_id, text=mC)
