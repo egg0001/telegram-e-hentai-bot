@@ -10,6 +10,7 @@ import re
 import random
 from . import generalcfg
 from . import generator
+from .theLogger import loggerGene
 
 
 
@@ -72,12 +73,34 @@ def previewImageDL(manga, mangasession, logger, q):
 #    print (imageDict)
    q.put(imageDict)
 
-   
+         
       
 
 
-def accesstoehentai(method, mangasession, stop, logger, urls=None, searchopt=None):
-#    print (urls)
+def retryDocorator(func, logger=loggerGene(), retry=generalcfg.timeoutRetry):
+   '''This simple retry decorator provides a try-except looping to the accesstoehentai function for
+      overcoming network fluctuation.'''
+   def wrapperFunction(*args, **kwargs):
+      err = 0 
+      for err in range(retry):
+         try:
+            resultList = func(*args, **kwargs)
+            break
+         except Exception as error:
+           err += 1
+           logger.warning(str(error))
+      else:
+         logger.warning('Retry limitation reached')
+         resultList = []
+      return resultList
+   return wrapperFunction
+
+@retryDocorator
+def accesstoehentai(method, mangasession, stop, logger, urls=None):
+   ''' Most of the parts of the  program would use this function to retrive the htmlpage, and galleries'
+       information by using e-h's API. It provides two methods to access e-hentai/exhentai. The GET 
+       methot would return the htmlpage; and the POST method would extract the gallery ID and gallery
+       key to generate the json payload sending exploit e-h's API then return the API's result.'''
    resultList = []
    if method == 'get':
       inputInfo = urls
@@ -96,30 +119,13 @@ def accesstoehentai(method, mangasession, stop, logger, urls=None, searchopt=Non
    else:
       inputInfo = ''
    for ii in inputInfo:
-      err = 0
-      for err in range(generalcfg.timeoutRetry):
-         try:
-            if method == 'get':
-               r = mangasession.get(ii)
-               resultList.append(r.text)
-            else:
-            #    if searchopt.eh == True:
-               r = mangasession.post('https://api.e-hentai.org/api.php', json=ii)
-            #    else:
-            #       r = mangasession.post('https://api.exhentai.org/api.php', json=ii)
-               mangaDictMeta = r.json()
-               resultList.extend(mangaDictMeta['gmetadata'])
-         except Exception as error:
-            logger.error('Encountered an error while access e-h/exh - {0}'.format(str(error)))
-            err += 1
-            generator.Sleep.Havearest(stop)
-         else:
-            generator.Sleep.Havearest(stop)
-            err = 0
-            break
+      if method == 'get':
+         r = mangasession.get(ii)
+         resultList.append(r.text)
       else:
-         logger.error('Retry limitation reached {0} times, discarded'.format(generalcfg.dlRetry))
-         err = 0
+         r = mangasession.post('https://api.e-hentai.org/api.php', json=ii)
+         mangaDictMeta = r.json()
+         resultList.extend(mangaDictMeta['gmetadata'])
    return resultList
 
 

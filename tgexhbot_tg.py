@@ -100,51 +100,58 @@ def searcheh(bot, threadQ, job=None, user_data=None):
             if len(toTelegramDict[td]) == 0:
                messageDict = {"messageCate": "message",
                               "messageContent": ["------Could not find any new result for {0}------".format(str(td))]}
-               channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
+               channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
                continue
             messageDict = {"messageCate": "message",
                            "messageContent": ["------This is the result of {0}------".format(str(td))]}
-            channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
+            channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
             for manga in toTelegramDict[td]:
             #    for obj in toTelegramDict[td][result]:
                if manga.previewImageObj:
                 #   print(manga.previewImageObj.getbuffer().nbytes)
                   messageDict = {'messageCate': "photo", "messageContent": [manga.previewImageObj]}
-                  channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
+                  channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
                messageDict = {'messageCate': "message", "messageContent": ['{0}\n{1}'.format(manga.title, manga.url)]}
-               channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id, logger=logger)
+               channelmessage(bot=bot, messageDict=messageDict, chat_id=chat_id)
          logger.info("User {0}'s result has been sent.".format(td))
       logger.info("All users' result has been sent.")
    else: 
       logger.info("Could not gain any new result to users.")         
       messageDict = {"messageCate": "message", "messageContent": ["We do not have any new result"]}
-      channelmessage(bot=bot, messageDict=messageDict, chat_id=generalcfg.pubChannelID, logger=logger)
+      channelmessage(bot=bot, messageDict=messageDict, chat_id=generalcfg.pubChannelID)
    threadQ.task_done()
 
-def channelmessage(bot, messageDict, chat_id, logger): 
+def retryDocorator(func, retry=generalcfg.timeoutRetry):
+   '''This simple retry decorator provides a try-except looping to the channelmessage function to
+      overcome network fluctuation.'''
+
+   def wrapperFunction(*args, **kwargs):
+      err = 0 
+      for err in range(retry):
+         try:
+            func(*args, **kwargs)
+            break
+         except Exception as error:
+           err += 1
+           logger.warning(str(error))
+      else:
+         logger.warning('Retry limitation reached')
+         
+      return
+   return wrapperFunction
+
+@retryDocorator
+def channelmessage(bot, messageDict, chat_id):
+   ''' All the functions containing user interaction would use this function to send messand 
+       to user.'''
    messageContent = messageDict["messageContent"]
    for mC in messageContent:
-      err = 0
-      for err in range(generalcfg.timeoutRetry):
-         try:
-            if messageDict['messageCate'] == 'photo':
-               mC.seek(0)
-            #    print(mC)
-            #    print(mC.name)
-               bot.send_photo(chat_id=chat_id, photo=mC)
-            else:
-               bot.send_message(chat_id=chat_id, text=mC)
-         except:
-            err += 1
-            time.sleep(1)
-         else:
-            time.sleep(0.5)
-            err = 0
-            break
+      if messageDict['messageCate'] == 'photo':
+         mC.seek(0)
+         bot.send_photo(chat_id=chat_id, photo=mC)
       else:
-         logger.error("Retry limitation for sending message reached, discarded.")
-         err = 0
-
+         bot.send_message(chat_id=chat_id, text=mC)
+   return None
 
 def thread_containor(threadQ):
    # Put any threads to this function and it would run separately.
@@ -201,8 +208,9 @@ def main():
    updater.idle()
 
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s - %(module)s.%(funcName)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
+logging.getLogger('requests').setLevel(logging.CRITICAL)
 threadQ = Queue()  # This queue object put the spider function into the thread containor 
                    # Using this thread containor wound also limits the download function thread
                    # to prevent e-h to ban IP.
