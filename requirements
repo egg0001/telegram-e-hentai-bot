@@ -1,0 +1,4 @@
+requests==2.19.1
+requests[socks]
+python-telegram-bot==10.1.0
+python-telegram-bot[socks]

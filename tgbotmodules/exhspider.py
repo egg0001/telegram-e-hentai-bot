@@ -18,31 +18,38 @@ import time
 
 class Manga():
    __slots__ = ('url', 'title', 'mangaData', 'previewImageObj', 'imageUrlSmall')
-      
-def pagedownload(urls, mangasession, searchopt, logger, path=None):
-   mangasession = mangasession
-   stop = generator.Sleep(sleepstr=searchopt.rest)
-   urlsdict = {}
-   tempList = download.accesstoehentai(method='get', 
-                                       mangasession=mangasession,
-                                       stop=stop,
-                                       urls=urls,
-                                       logger=logger)
-   if tempList:
-      for tl in tempList:
-         urlsdict.update(datafilter.Grossdataspider(htmlcontent=tl))
-   logger.info("Retrived {0} gallery(s) urls".format(len(urlsdict)))
-   return urlsdict
-    
+
+   def previewDownload(self, mangasession, logger, q):
+      download.previewImageDL(manga=self, 
+                              mangasession=mangasession, 
+                              logger=logger,
+                              q=q)
+
+
 class urlAnalysis():
-   def __init__(self, urls, path, mangasession, searchopt, logger):
-      self.urls = urls
+   def __init__(self, searchUrls, path, mangasession, searchopt, logger):
+      self.searchUrls=searchUrls     
+      self.urls = []
       self.path = path
       self.futureList = []
       self.mangaObjList=[]
       self.mangasession = mangasession
       self.logger = logger
       self.searchopt = searchopt
+
+   def pagedownload(self):
+      stop = generator.Sleep(sleepstr=self.searchopt.rest)
+      urlsdict = {}
+      tempList = download.accesstoehentai(method='get', 
+                                          mangasession=self.mangasession,
+                                          stop=stop,
+                                          urls=self.searchUrls,
+                                          logger=self.logger)
+      if tempList:
+         for tl in tempList:
+            urlsdict.update(datafilter.Grossdataspider(htmlcontent=tl))
+      self.logger.info("Retrived {0} gallery(s) urls".format(len(urlsdict)))
+      self.urls.extend(list(urlsdict.values()))
 
    def mangaAnalysis(self, executer, q):
 
@@ -110,8 +117,7 @@ class urlAnalysis():
             self.mangaObjList.append(manga)
       self.logger.info('Filtered {0} gallery(s) containing uncomfortable tags'.format((len(tempList)-len(mangaObjList))))
       for manga in self.mangaObjList:
-         future = executer.submit(fn=download.previewImageDL, 
-                                  manga=manga,
+         future = executer.submit(fn=manga.previewDownload,
                                   mangasession=self.mangasession,
                                   logger=self.logger,
                                   q=q)
@@ -119,32 +125,8 @@ class urlAnalysis():
 
 
 
-def mangaSpider(urls, mangasession, searchopt, logger, path=None):
-   mangaDict={}
-   urlanalysis = urlAnalysis(urls=urls,path=path,mangasession=mangasession,searchopt=searchopt,logger=logger)
-   executer = ThreadPoolExecutor(max_workers=generalcfg.dlThreadLimit)
-   q = Queue() # store the image memory objects
-   urlanalysis.mangaAnalysis(executer=executer,q=q) # The ThreadPoolExecutor containing and running the preview image downloading
-   for future in urlanalysis.futureList:
-      future.result()
-   executer.shutdown()
-   imageTempDict = {}  # Temporally store the image objs
-   logger.info('All preview image download threads has completed.')
-   while not q.empty():
-      temp = q.get()
-      imageTempDict.update(temp)
-   logger.info('Image objects retrived.')
-#    print (imageTempDict)
-   for manga in urlanalysis.mangaObjList:
-      if imageTempDict.get(manga.url):
-         manga.previewImageObj = imageTempDict[manga.url]
-      else:
-         manga.previewImageObj = None
-   for manga in urlanalysis.mangaObjList:
-      mangaDict.update({manga.url: manga.mangaData})
-   with open("{0}.mangalog".format(path), "w") as fo:
-      json.dump(mangaDict, fo)
-   return urlanalysis.mangaObjList
+# def mangaSpider(urls, mangasession, searchopt, logger, path=None):
+
 
 def exhcookiestest(mangasessionTest, cookies, forceCookiesEH=False):   #Evaluate whether the cookies could access exh
    requests.utils.add_dict_to_cookiejar(mangasessionTest.cookies, cookies)
@@ -210,17 +192,45 @@ def Spidercontrolasfunc(searchopt, cookies, path, logger, datastore, spiderDict,
                                  cookies=cookies,
                                  logger=logger)
    searchUrls = generator.urlgenerate(searchopt)
-   urlsdict = pagedownload(urls=searchUrls, 
-                           mangasession=mangasession, 
-                           searchopt=searchopt, 
-                           logger=logger, 
-                           path=path)
-   urls = list(urlsdict.values())
-   mangaObjList = mangaSpider(urls=urls,
-                              mangasession=mangasession,
-                              searchopt=searchopt,
-                              logger=logger,
-                              path=path)
+   mangaDict = {}
+   urlanalysis = urlAnalysis(searchUrls=searchUrls ,path=path,mangasession=mangasession,searchopt=searchopt,logger=logger)
+   urlanalysis.pagedownload()
+   executer = ThreadPoolExecutor(max_workers=generalcfg.dlThreadLimit) # The ThreadPoolExecutor containing and running the preview image downloading
+   q = Queue() # store the image memory objects
+   urlanalysis.mangaAnalysis(executer=executer,q=q) 
+   for future in urlanalysis.futureList:
+      future.result()
+   executer.shutdown()
+   imageTempDict = {}  # Temporally store the image objs
+   logger.info('All preview image download threads has completed.')
+   while not q.empty():
+      temp = q.get()
+      imageTempDict.update(temp)
+   logger.info('Image objects retrived.')
+#    print (imageTempDict)
+   for manga in urlanalysis.mangaObjList:
+      if imageTempDict.get(manga.url):
+         manga.previewImageObj = imageTempDict[manga.url]
+      else:
+         manga.previewImageObj = None
+   for manga in urlanalysis.mangaObjList:
+      mangaDict.update({manga.url: manga.mangaData})
+   with open("{0}.mangalog".format(path), "r") as fo:
+      currentMangaDict = json.load(fo)
+   currentMangaDict.update(mangaDict)
+   with open("{0}.mangalog".format(path), "w") as fo:
+      json.dump(currentMangaDict, fo)
+#    urlsdict = pagedownload(urls=searchUrls, 
+#                            mangasession=mangasession, 
+#                            searchopt=searchopt, 
+#                            logger=logger, 
+#                            path=path)
+#    urls = list(urlsdict.values())
+#    mangaObjList = mangaSpider(urls=urls,
+#                               mangasession=mangasession,
+#                               searchopt=searchopt,
+#                               logger=logger,
+#                               path=path)
 #    mangaObjList = mangaanalysis(urls=analysisUrls, 
 #                                 mangasession=mangasession, 
 #                                 searchopt=searchopt, 
@@ -231,7 +241,7 @@ def Spidercontrolasfunc(searchopt, cookies, path, logger, datastore, spiderDict,
    datastore(userdict=cookiesUpdateDict, fromSpider=True)
    del mangasession
    logger.info('Search completed.')
-   return mangaObjList
+   return urlanalysis.mangaObjList
 
 
       

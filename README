@@ -41,18 +41,21 @@ python-telegram-bot   https://python-telegram-bot.readthedocs.io
 
 BASIC USAGE FOR BOT ADMIN
 
-1. Apply a bot at @BotFather on telegram. Then copy the token to token variable in 
+1. View the setup.sh/setup.bat based on OS to check the python's path, then run one of them to install 
+   all the required modules.
+
+2. Apply a bot at @BotFather on telegram. Then copy the token to token variable in 
    tgbotmodules/spidermodules/generalcfg.py.
 
-2. Create a private channel and add the bot created before as the admin. Then exploit some 
+3. Create a private channel and add the bot created before as the admin. Then exploit some 
    specified bots (like @getidsbot) to gain the channel ID. Once gained this ID, copy it to the 
    pubChannelID variable in tgbotmodules/spidermodules/generalcfg.py.
 
-3. RECOMMENDATION-View the config file (generalcfg.py) to customize the bot's functions. 
+4. RECOMMENDATION-View the config file (generalcfg.py) to customize the bot's functions. 
 
-4. Run tgexhbot_tg.py
+5. Run tgexhbot_tg.py
 
-5. Now exploit telegram to access your bot and add the search profiles.
+6. Now exploit telegram to access your bot and add the search profiles.
 
 
 If bot admin hopes to run this bot on servers' background, exploiting systemd to create a service is 
