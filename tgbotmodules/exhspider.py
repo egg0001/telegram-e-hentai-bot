@@ -57,10 +57,6 @@ class urlAnalysis():
       tempList = [] # store the API result from e-h/exh
       tempDict = {} # transfer internal data
       mangaObjList = [] # Store the Manga objects
- 
-                                                # threading.
-
-      self.logger.info('Thread containor for downloading preview image initiated.')
       download.userfiledetect(path=self.path)
       with open("{0}.mangalog".format(self.path), "r") as fo:
          mangaDict =  json.load(fo)
@@ -193,7 +189,11 @@ def Spidercontrolasfunc(searchopt, cookies, path, logger, datastore, spiderDict,
                                  logger=logger)
    searchUrls = generator.urlgenerate(searchopt)
    mangaDict = {}
-   urlanalysis = urlAnalysis(searchUrls=searchUrls ,path=path,mangasession=mangasession,searchopt=searchopt,logger=logger)
+   urlanalysis = urlAnalysis(searchUrls=searchUrls, 
+                             path=path, 
+                             mangasession=mangasession,
+                             searchopt=searchopt,
+                             logger=logger)
    urlanalysis.pagedownload()
    executer = ThreadPoolExecutor(max_workers=generalcfg.dlThreadLimit) # The ThreadPoolExecutor containing and running the preview image downloading
    q = Queue() # store the image memory objects
@@ -220,22 +220,6 @@ def Spidercontrolasfunc(searchopt, cookies, path, logger, datastore, spiderDict,
    currentMangaDict.update(mangaDict)
    with open("{0}.mangalog".format(path), "w") as fo:
       json.dump(currentMangaDict, fo)
-#    urlsdict = pagedownload(urls=searchUrls, 
-#                            mangasession=mangasession, 
-#                            searchopt=searchopt, 
-#                            logger=logger, 
-#                            path=path)
-#    urls = list(urlsdict.values())
-#    mangaObjList = mangaSpider(urls=urls,
-#                               mangasession=mangasession,
-#                               searchopt=searchopt,
-#                               logger=logger,
-#                               path=path)
-#    mangaObjList = mangaanalysis(urls=analysisUrls, 
-#                                 mangasession=mangasession, 
-#                                 searchopt=searchopt, 
-#                                 logger=logger, 
-#                                 path=path)
    spiderDict[sd]["usercookies"] = requests.utils.dict_from_cookiejar(mangasession.cookies)
    cookiesUpdateDict = {sd: spiderDict[sd]}
    datastore(userdict=cookiesUpdateDict, fromSpider=True)

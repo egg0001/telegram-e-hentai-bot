@@ -9,7 +9,7 @@ import io
 import re
 import random
 from . import generalcfg
-from . import generator
+from . import generator 
 from .theLogger import loggerGene
 
 
@@ -100,7 +100,7 @@ def accesstoehentai(method, mangasession, stop, logger, urls=None):
    ''' Most of the parts of the  program would use this function to retrive the htmlpage, and galleries'
        information by using e-h's API. It provides two methods to access e-hentai/exhentai. The GET 
        methot would return the htmlpage; and the POST method would extract the gallery ID and gallery
-       key to generate the json payload sending exploit e-h's API then return the API's result.'''
+       key to generate the json payload sending to e-h's API then retrive the API's result.'''
    resultList = []
    if method == 'get':
       inputInfo = urls
