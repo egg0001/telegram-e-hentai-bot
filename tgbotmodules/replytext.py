@@ -2,6 +2,9 @@
 
 #-----------------------verify section---------------------------------------
 
+startMessage = "Welcome to Nakazawa Bookstore, please show your vip card."
+
+
 GeneralInfo = ("You have {0} profile(s) on this service. \n" +
                "If you have more than {1} profiles on this service, "  +
                "you would not allow to create new one. \n" +

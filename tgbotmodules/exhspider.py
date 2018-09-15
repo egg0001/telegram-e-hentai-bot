@@ -17,16 +17,24 @@ import random
 import time
 
 class Manga():
+   '''This class and its objects represents the galleries of the e-h/exh. it also
+      contains a method to download the preview images of these galleries.'''
    __slots__ = ('url', 'title', 'mangaData', 'previewImageObj', 'imageUrlSmall')
 
-   def previewDownload(self, mangasession, logger, q):
+   def previewDownload(self, mangasession, logger):
       download.previewImageDL(manga=self, 
                               mangasession=mangasession, 
-                              logger=logger,
-                              q=q)
+                              logger=logger,)
 
 
 class urlAnalysis():
+   '''This class represents the searching result index pages of e-h/exh. The pagedownload method
+      would download the html content of the searching urls, extract all the galleries urls and
+      store them in the urls attribute. Then, the mangaAnalysis method would extract the tags' 
+      information of every gallery by exploiting the e-h's API. After that, it would rule out
+      some unsuitable galleries by some filters. Eventually, it would creates a lot of Manga 
+      objects representing the galleries and exploit the future objects of the ThreadPoolExecutor
+      object to warp them.'''
    def __init__(self, searchUrls, path, mangasession, searchopt, logger):
       self.searchUrls=searchUrls     
       self.urls = []
@@ -51,7 +59,7 @@ class urlAnalysis():
       self.logger.info("Retrived {0} gallery(s) urls".format(len(urlsdict)))
       self.urls.extend(list(urlsdict.values()))
 
-   def mangaAnalysis(self, executer, q):
+   def mangaAnalysis(self, executer):
 
       urlSeparateList = [] # separate urls (list) to sublist containing 24 urls in each element
       tempList = [] # store the API result from e-h/exh
@@ -115,8 +123,7 @@ class urlAnalysis():
       for manga in self.mangaObjList:
          future = executer.submit(fn=manga.previewDownload,
                                   mangasession=self.mangasession,
-                                  logger=self.logger,
-                                  q=q)
+                                  logger=self.logger)
          self.futureList.append(future)
 
 
@@ -124,7 +131,10 @@ class urlAnalysis():
 # def mangaSpider(urls, mangasession, searchopt, logger, path=None):
 
 
-def exhcookiestest(mangasessionTest, cookies, forceCookiesEH=False):   #Evaluate whether the cookies could access exh
+def exhcookiestest(mangasessionTest, cookies, forceCookiesEH=False):
+   '''This method would evaluate whether a user's cookies could access exh.
+      If it could access exh, the program would generate exh search links. 
+      Otherwise it would geerate e-h search links.'''
    requests.utils.add_dict_to_cookiejar(mangasessionTest.cookies, cookies)
    usefulCookiesDict = {'e-h': False, 'exh': False}
    if forceCookiesEH == False:
@@ -147,6 +157,8 @@ def exhcookiestest(mangasessionTest, cookies, forceCookiesEH=False):   #Evaluate
    return usefulCookiesDict
 
 def Sessiongenfunc(searchopt, cookies, logger):
+   '''This function would generate a requests session for the main program to access
+      e-h/exh.'''
    mangasession = requests.Session()
    if generalcfg.headers:
       mangasession.headers.update(random.choice(generalcfg.headers))
@@ -184,6 +196,17 @@ def Sessiongenfunc(searchopt, cookies, logger):
    return mangasession
 
 def Spidercontrolasfunc(searchopt, cookies, path, logger, datastore, spiderDict, sd):
+   '''This function controls the search process of an user. Firstly, it would create a requests
+      session object and generate the search links. Then, it exploits these variables to generate
+      urlAnalysis object controling the extraction of galleries' urls, tags' information from 
+      e-h/exh's index pages and API and store them into some objects of Manga class containing a 
+      method to download the preview image. After that, by providing a ThreadPoolExecutor object, 
+      the mangaAnalysis method in the urlAnalysis class would create a lot of future objects of 
+      ThreadPoolExecutor and store them into futureList attribute of the class. Then, by running 
+      these future objects, it would exploit the previewDownload method in the Manga objects to 
+      download the preview images of the galleries and store them into the attribute of Manga objects. 
+      Eventually, it would update the user's cookies and return a list containing many Manga objects.
+      '''
    mangasession = Sessiongenfunc(searchopt=searchopt, 
                                  cookies=cookies,
                                  logger=logger)
@@ -196,23 +219,23 @@ def Spidercontrolasfunc(searchopt, cookies, path, logger, datastore, spiderDict,
                              logger=logger)
    urlanalysis.pagedownload()
    executer = ThreadPoolExecutor(max_workers=generalcfg.dlThreadLimit) # The ThreadPoolExecutor containing and running the preview image downloading
-   q = Queue() # store the image memory objects
-   urlanalysis.mangaAnalysis(executer=executer,q=q) 
+#    q = Queue() # store the image memory objects
+   urlanalysis.mangaAnalysis(executer=executer) 
    for future in urlanalysis.futureList:
       future.result()
    executer.shutdown()
    imageTempDict = {}  # Temporally store the image objs
    logger.info('All preview image download threads has completed.')
-   while not q.empty():
-      temp = q.get()
-      imageTempDict.update(temp)
-   logger.info('Image objects retrived.')
+#    while not q.empty():
+#       temp = q.get()
+#       imageTempDict.update(temp)
+#    logger.info('Image objects retrived.')
 #    print (imageTempDict)
-   for manga in urlanalysis.mangaObjList:
-      if imageTempDict.get(manga.url):
-         manga.previewImageObj = imageTempDict[manga.url]
-      else:
-         manga.previewImageObj = None
+#    for manga in urlanalysis.mangaObjList:
+#       if imageTempDict.get(manga.url):
+#          manga.previewImageObj = imageTempDict[manga.url]
+#       else:
+#          manga.previewImageObj = None
    for manga in urlanalysis.mangaObjList:
       mangaDict.update({manga.url: manga.mangaData})
    with open("{0}.mangalog".format(path), "r") as fo:

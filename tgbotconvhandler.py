@@ -480,6 +480,11 @@ def delete(inputStr, user_data, chat_data, logger):
    return outputDict  
 
 def spiderfunction(logger, spiderDict=None):
+   '''This function would either exploit the provided user information or the information on
+      disk (if user information is not provided) to search the e-h/exh and return several 
+      Manga objects. Every Manga object contains all of a gallery's information. This function
+      would create a dict like {username1: MangaObjectList1, username2: MangaObjectList2} to 
+      handle multiple users' result'''
    if spiderDict == None:
       spiderDict = userdatastore.getspiderinfo()
    else: 
@@ -520,17 +525,17 @@ def spiderfunction(logger, spiderDict=None):
 
          if imageObjList:
             toTelegramDict.update({sd: imageObjList})
-      #    if outDict.get('cookiesDict'):
-      #       spiderDict[sd]["usercookies"] = outDict['cookiesDict']
-      #       cookiesUpdateDict = {sd: spiderDict[sd]}
-      #       userdatastore.datastore(userdict=cookiesUpdateDict, fromSpider=True)
-      #       del outDict['cookiesDict']
       else:
          pass
    return toTelegramDict
 
 
 def messageanalyze(inputStr=None, user_data=None, chat_data=None, logger=None):
+   '''This function controls the interaction between user and bot. The basic working
+      method of this function is that the upper layers provide the user input, status
+      and user information. Then, this function would exploit a suitable sub function
+      to treat these message and return the result. After that, it would return these 
+      results to the upper layers.'''
    messageFuncDict = {'verify': verify,
                       'usercookies': usercookies,
                       'userkey': userkey,

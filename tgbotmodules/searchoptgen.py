@@ -40,6 +40,8 @@ def searchparser():
 
 
 def searchgenerate(generateDict):    
+   '''This function would generate a searchopt object contains a user's search settings providing 
+      to the spider.'''
    searchopt = searchparser()
 #    print (generateDict)
    if generateDict['userkey']:

@@ -23,17 +23,30 @@ from tgbotmodules import userdatastore
 # from tgbotmodules import userdatastore
  
 def start(bot, update, user_data, chat_data):
+   '''This function is the initiation of the bot's conversation. It would clear the
+   previous userdata (if have) and create a new user profile for the later conversation.
+   ''' 
    user_data.clear()
    chat_data.clear()
    user_data.update({"actualusername": str(update.message.from_user.username),
                      "chat_id": update.message.chat_id}
                    )
    logger.info("Actual username is %s.", str(update.message.from_user.username))
-   update.message.reply_text(text="Welcome to Nakazawa Bookstore, please show your vip card.")
+   update.message.reply_text(text=replytext.startMessage)
    chat_data.update({'state': 'verify'})
    return STATE
 
 def state(bot, update, user_data, chat_data):
+   '''This function would handle the whole interactions between user and bot. In other
+      words, it is a simple mimic of the python telegram bot's conversation handler 
+      module and providing a convenient way to move this program to other IM platforms.
+      The major process of this function is receiving a user message and send it to 
+      messageanalyze function. Then the messageanalyze function would return the result
+      depend on the content of the message. It exploited user_data and chat_data provided 
+      by the python telegram bot module to store user information as well as the user 
+      state. Moreover, while a user completes the search settings, this function would 
+      create a thread object containing a single search operation and return the result  
+      to user's chat to verify the searching settings.'''
    inputStr = update.message.text
    user_data.update({'chat_id': update.message.chat_id})
    outputDict = messageanalyze(inputStr=inputStr, 
@@ -64,6 +77,8 @@ def state(bot, update, user_data, chat_data):
    return state
 
 def searchIntervalCTL(bot, job, user_data=None):
+    '''The python telegram bot module would exploit this function to generate a search 
+       thread object to extract the information on e-h/exh.'''
     threadName = time.asctime()
     t = Thread(target=searcheh, 
                name=threadName, 
@@ -74,6 +89,10 @@ def searchIntervalCTL(bot, job, user_data=None):
 
 
 def searcheh(bot, threadQ, job=None, user_data=None):
+   '''This function controls the whole search process, including reading the search relating 
+      information from files or other functions' requests, using this information and the
+      spiderfunction function to search e-h/exh and then sending the search result to channel
+      and/or chat.'''
    logger.info("Search is beginning")
    if user_data:
       for ud in user_data:
@@ -154,9 +173,9 @@ def channelmessage(bot, messageDict, chat_id):
    return None
 
 def thread_containor(threadQ):
-   # Put any threads to this function and it would run separately.
-   # But please remember put the threadQ obj into the functions in those threads to use threadQ.task_done().
-   # Or the program would stock.
+   '''This simple thread containor could force the the program running a single search thread
+      simultaneously to prevent e-h/exh ban the server's IP. In the idle status, the threadQ.get()
+      method would block the infinity loop preventing it comsuming resources.'''
    threadCounter = 0
    while True:
       t = threadQ.get()
@@ -168,9 +187,13 @@ def thread_containor(threadQ):
          threadCounter = 0
 
 def autoCreateJob(job):
+   '''The python telegram bot's job module would exploit this function to create a recursive job to
+      run the users' setted search request stored on the disk.'''
    job.run_repeating(searchIntervalCTL, interval=generalcfg.interval, first=5)
 
 def cancel(bot, update, user_data, chat_data):  
+   '''If user type a /cancel command, the program would use this function to delete the user's current 
+      data and status.'''
    update.message.reply_text(text=replytext.UserCancel)
    logger.info("User %s has canceled the process.", str(update.message.from_user.username))
    user_data.clear()
@@ -179,9 +202,13 @@ def cancel(bot, update, user_data, chat_data):
    return ConversationHandler.END
 
 def error(bot, update, error):
+   '''The bot would exploit this function to report some rare and strange errors.'''
    logger.warning('Update "%s" caused error "%s"', update, error)
 
 def main():
+   '''This function controls the initiation of the bot inclding creating some objects to use the bot,
+      and the thread containor thread to deal with search requests both from jobs and user requests 
+      after finishing the settings.'''
    if generalcfg.proxy:
       updater = Updater(token=generalcfg.token, request_kwargs={'proxy_url': generalcfg.proxy[0]})
    else:   

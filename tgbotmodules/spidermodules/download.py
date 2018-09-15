@@ -42,7 +42,7 @@ def userfiledetect(path):
             pass
       
 
-def previewImageDL(manga, mangasession, logger, q):
+def previewImageDL(manga, mangasession, logger):
    logger.info('Begin to retrive preview image of {0}.'.format(manga.url))
 #    if mangaInfo["jptitle"]:
 #       title = mangaInfo["jptitle"][0]
@@ -69,9 +69,10 @@ def previewImageDL(manga, mangasession, logger, q):
       bio = imageDownload(previewimg=previewimg, mangasession=mangasession, logger=logger, fromBig=True)
    else:
       bio = imageDownload(previewimg=previewimg, mangasession=mangasession, logger=logger)
-   imageDict = {manga.url: bio}
+   manga.previewImageObj = bio
+#    imageDict = {manga.url: bio}
 #    print (imageDict)
-   q.put(imageDict)
+#    q.put(imageDict)
 
          
       

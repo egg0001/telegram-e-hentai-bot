@@ -7,6 +7,10 @@ import time
 
 
 def userfiledetect():
+   '''By exploiting this function, other parts of the program would detect the status of the  
+      file storing the users' information. If this file does not exist or corrupted, this 
+      function would create a brand new file and backup the broken file (if has) for further
+      analysis.'''
    statusdict = {'isfile': True, 'iscorrect': True,}
    if os.path.exists("./userdata") == False:
       os.mkdir("./userdata")
@@ -40,7 +44,10 @@ def userfiledetect():
    return statusdict
 
 def datastore(userdict, fromSpider=False):
-
+   '''The user data store function containing in the tgbotconvhandler would exploit this function
+      to store the user information/settings in to the file. and the program would exploit the 
+      information in this file to search e-h/exh recursively. Moreover, the spider would also 
+      exploit this function to store the most updated user cookies.'''
    IOreportdict = {'issaved': False, 'nosamename': True,}
 
    with  open('./userdata/userdata', 'r') as fo:
@@ -60,7 +67,8 @@ def datastore(userdict, fromSpider=False):
    return IOreportdict
 
 def dataretrive(actusername):   #must use actual username
-
+   '''By providing the real telegram username, this function would return all the virtual
+      username containing this actual username.'''
    with open('./userdata/userdata', 'r') as fo:
       retrivedata = json.load(fo)
    userdata = {}
@@ -71,6 +79,8 @@ def dataretrive(actusername):   #must use actual username
    return userdata
 
 def datadelete(virusername):   #must input virtual username
+   '''By providing a virtual username, this function would delete the information of this
+      virtual username.'''
    IOreportdict = {'isdelete': False, 'hasdata': True}
    with open('./userdata/userdata', 'r') as fo:
       retrivedata = json.load(fo)
@@ -85,6 +95,8 @@ def datadelete(virusername):   #must input virtual username
    return IOreportdict
 
 def getspiderinfo():
+   '''The spiderfunction would exploit this function to retrive all the user information
+      from file preparing to search.'''
    spiderInfoDict = {}
    userfiledetect()
    with open('./userdata/userdata', 'r') as fo:
