@@ -46,9 +46,9 @@ def searchgenerate(generateDict):
 #    print (generateDict)
    if generateDict['userkey']:
       searchopt.keyword = generateDict['userkey']
-   if 'non-h' in generateDict['usercate']:
-      generateDict['usercate'].remove('non-h')
-      generateDict['usercate'].append('non_h')
+   # if 'non-h' in generateDict['usercate']:
+   #    generateDict['usercate'].remove('non-h')
+   #    generateDict['usercate'].append('non_h')
 #    print (generateDict['usercate'])
    for gd in generateDict['usercate']:
       searchopt.__setattr__(gd, True)

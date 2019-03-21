@@ -122,6 +122,7 @@ def accesstoehentai(method, mangasession, stop, logger, urls=None):
    for ii in inputInfo:
       if method == 'get':
          r = mangasession.get(ii)
+         # print (r.text)
          resultList.append(r.text)
       else:
          r = mangasession.post('https://api.e-hentai.org/api.php', json=ii)

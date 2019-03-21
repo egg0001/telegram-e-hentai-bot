@@ -6,61 +6,77 @@ import random
 
 def urlgenerate(searchopt):  #put this function to the specify module later
    SearchKey = searchopt.keyword  # The general keywords 
-   searchcatedict = {"&f_doujinshi=1": searchopt.doujinshi,
-                     "&f_manga=1": searchopt.manga,
-                     "&f_artistcg=1": searchopt.artistcg,
-                     "&f_gamecg=1": searchopt.gamecg,
-                     "&f_western=1": searchopt.western,
-                     "&f_non-h=1": searchopt.non_h,
-                     "&f_cosplay=1": searchopt.cosplay,
-                     "&f_asianporn=1": searchopt.asianporn,
-                     "&f_misc=1": searchopt.cate_misc,
-                     "f_imageset=1": searchopt.imageset,
+   searchcatedict = {"doujinshi": searchopt.doujinshi,
+                     "manga": searchopt.manga,
+                     "artistcg": searchopt.artistcg,
+                     "gamecg": searchopt.gamecg,
+                     "western": searchopt.western,
+                     "non-h": searchopt.non_h,
+                     "cosplay": searchopt.cosplay,
+                     "asianporn": searchopt.asianporn,
+                     "misc": searchopt.cate_misc,
+                     "imageset": searchopt.imageset,
                     }
 
+   categoryValue = {'doujinshi': 2, 
+                    'manga': 4,
+                    'artistcg': 8,
+                    'gamecg': 16,
+                    'western': 512,
+                    'non-h': 256,
+                    'imageset': 32,
+                    'cosplay': 64,
+                    'asianporn': 128,
+                    'misc': 1
+                    }
 
-
-   if searchopt.artist:
-      for a in searchopt.artist:
-         SearchKey = SearchKey + "+artist:" + a
-   
-   if searchopt.group:
-      for g in searchopt.group:
-         SearchKey = SearchKey + "+group:" + g
-   
-   if searchopt.parody:
-      for p in searchopt.parody:
-         SearchKey = SearchKey + "+parody:" + p
-
-   if searchopt.character:
-      for c in searchopt.character:
-         SearchKey = SearchKey + "+character:" + c
-   
-   if searchopt.male:
-      for m in searchopt.male:
-         SearchKey = SearchKey + "+male:" + m
-
-   if searchopt.female:
-      for f in searchopt.female:
-         SearchKey = SearchKey + "+female:" + f
-      
-   if searchopt.misc:
-      for mi in searchopt.misc:
-         SearchKey = SearchKey + "+misc:" + mi
-
-   if searchopt.eh == False:
-      inputurl = "https://exhentai.org/?page=%d"
-   else:
-      inputurl = "https://e-hentai.org/?page=%d"
-
+   category = 1023
    for searchcate in searchcatedict.items():
       if searchcate[1] == True:
-         inputurl = inputurl + searchcate[0]
+         category = category ^ categoryValue[searchcate[0]]
 
-   inputurl = inputurl + "&f_search=KEY&f_apply=Apply+Filter"
-   if searchopt.eh == True:
-      inputurl = inputurl +'&inline_set=dm_t'
-   inputurl_list = [inputurl.replace("KEY", SearchKey) % i for i in range(searchopt.pages)]
+
+
+   # if searchopt.artist:
+   #    for a in searchopt.artist:
+   #       SearchKey = SearchKey + "+artist:" + a
+   
+   # if searchopt.group:
+   #    for g in searchopt.group:
+   #       SearchKey = SearchKey + "+group:" + g
+   
+   # if searchopt.parody:
+   #    for p in searchopt.parody:
+   #       SearchKey = SearchKey + "+parody:" + p
+
+   # if searchopt.character:
+   #    for c in searchopt.character:
+   #       SearchKey = SearchKey + "+character:" + c
+   
+   # if searchopt.male:
+   #    for m in searchopt.male:
+   #       SearchKey = SearchKey + "+male:" + m
+
+   # if searchopt.female:
+   #    for f in searchopt.female:
+   #       SearchKey = SearchKey + "+female:" + f
+      
+   # if searchopt.misc:
+   #    for mi in searchopt.misc:
+   #       SearchKey = SearchKey + "+misc:" + mi
+
+   if searchopt.eh == False:
+      inputurl = "https://exhentai.org/?page=%d&f_cats={0}&f_search={1}&f_apply=Apply+Filter"
+   else:
+      inputurl = "https://e-hentai.org/?page=%d&f_cats={0}&f_search={1}&f_apply=Apply+Filter"
+
+
+
+   # inputurl = inputurl + "&f_search=KEY&f_apply=Apply+Filter"
+   # if searchopt.eh == True:
+   #    inputurl = inputurl +'&inline_set=dm_t'
+   inputurl_list = [inputurl.format(category, SearchKey) % i for i in range(searchopt.pages)]
+   # print (inputurl_list)
    return inputurl_list
    
    

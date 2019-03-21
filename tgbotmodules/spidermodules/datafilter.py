@@ -7,19 +7,19 @@ from . import download
 
 
 def exhtest(htmlContent):
-   pattern = re.compile(r"Front Page")
+   pattern = re.compile(r"Front")
    usefulCookies = False
    if bool(re.search(pattern, htmlContent)):
       usefulCookies = True
    return usefulCookies
    
 def Grossdataspider(htmlcontent):
-   patternThumb = re.compile(r"Show List")
-   matchThumb = patternThumb.search(htmlcontent)
-   if matchThumb:
-      urlsdict = GrossdataspiderThumbnail(htmlcontent=htmlcontent)
-   else:
-      urlsdict = GrossdataspiderList(htmlcontent=htmlcontent)
+   # patternThumb = re.compile(r"Show List")
+   # matchThumb = patternThumb.search(htmlcontent)
+   # if matchThumb:
+   urlsdict = GrossdataspiderThumbnail(htmlcontent=htmlcontent)
+   # else:
+   #    urlsdict = GrossdataspiderList(htmlcontent=htmlcontent)
    return urlsdict
  
 def GrossdataspiderList(htmlcontent):
@@ -53,10 +53,10 @@ def GrossdataspiderList(htmlcontent):
 
 
 def GrossdataspiderThumbnail(htmlcontent):
-   patternBegin = re.compile(r"id1")
+   patternBegin = re.compile(r'''class="gl4''')
    matchesBegin = patternBegin.finditer(htmlcontent)
    beginList = []
-   patternEnd = re.compile(r"id44")
+   patternEnd = re.compile(r'''class="gl3''')
    matchesEnd = patternEnd.finditer(htmlcontent)
    endList = []
    for match in matchesBegin:
@@ -64,10 +64,11 @@ def GrossdataspiderThumbnail(htmlcontent):
  
    for match in matchesEnd:
       endList.append(match.span()[0])
-	 
+   # print (beginList)
+   # print (endList)
    loopCounter = 0
    urlsDict = {}
-   linkPattern = re.compile(r'''div class="id2"><a href="(https://.+\.org/g/\w+/\w+/)">(.+)</a></div><div class="id3" style=''')
+   linkPattern = re.compile(r'''<a href="(https://.+\.org/g/\w+/\w+/)">(.+)</a></div>''')
    while loopCounter < len(beginList):
       substr = htmlcontent[beginList[loopCounter]: endList[loopCounter]]
       matchesLinkInfo = linkPattern.search(substr)
@@ -79,6 +80,7 @@ def GrossdataspiderThumbnail(htmlcontent):
       else:
          pass
       loopCounter += 1
+   # print (urlsDict)
    return urlsDict
    
    
