@@ -68,7 +68,7 @@ def GrossdataspiderThumbnail(htmlcontent):
    # print (endList)
    loopCounter = 0
    urlsDict = {}
-   linkPattern = re.compile(r'''<a href="(https://.+\.org/g/\w+/\w+/)"><div class="gl4[a-zA-Z] glname">(.+)</div></a>''')
+   linkPattern = re.compile(r'''<a href="(https://.+\.org/g/\w+/\w+/)"><div class="gl4[a-zA-Z0-9\s]+">(.+)</div></a>''')
    while loopCounter < len(beginList):
       substr = htmlcontent[beginList[loopCounter]: endList[loopCounter]]
       matchesLinkInfo = linkPattern.search(substr)
